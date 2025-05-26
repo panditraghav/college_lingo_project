@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:lingo/Appdrawer.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:lingo/Appdrawer.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:flutter_tts/flutter_tts.dart';
 
 class AITutorScreen extends StatefulWidget {
   const AITutorScreen({Key? key}) : super(key: key);
@@ -17,23 +19,60 @@ class _AITutorScreenState extends State<AITutorScreen> {
   final TextEditingController _controller = TextEditingController();
   StreamSubscription<GenerateContentResponse>? _streamSub;
 
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  final FlutterTts _tts = FlutterTts();
+  bool _isListening = false;
+  String _recognizedText = '';
+
   @override
   void initState() {
     super.initState();
 
-    // Initialize the Gemini model
+    // Gemini model initialization
     _model = GenerativeModel(
       model: 'models/gemini-2.0-flash',
-      apiKey: "AIzaSyBEnHyjfYQ-heuPe6IdP7klvFuzgsuTgQ0",
+      apiKey: 'AIzaSyBEnHyjfYQ-heuPe6IdP7klvFuzgsuTgQ0', // Replace with your actual API key
     );
-
-    // Start a multi-turn chat session
     _chatSession = _model.startChat();
+    _initTTS();
+  }
+
+  void _initTTS() {
+    _tts.setLanguage("en-US");
+    _tts.setPitch(1.0);
+    _tts.setSpeechRate(0.9);
+  }
+
+  void _speak(String text) async {
+    await _tts.stop(); // Stop previous speech
+    await _tts.speak(text);
+  }
+
+  Future<void> _startListening() async {
+    bool available = await _speech.initialize();
+    if (available) {
+      setState(() => _isListening = true);
+      _speech.listen(
+        onResult: (result) {
+          setState(() {
+            _recognizedText = result.recognizedWords;
+            _controller.text = _recognizedText;
+          });
+        },
+      );
+    }
+  }
+
+  void _stopListening() {
+    _speech.stop();
+    setState(() => _isListening = false);
   }
 
   @override
   void dispose() {
     _streamSub?.cancel();
+    _tts.stop();
+    _speech.stop();
     super.dispose();
   }
 
@@ -52,7 +91,6 @@ class _AITutorScreenState extends State<AITutorScreen> {
     String buffer = '';
 
     try {
-      print('🟦 Sending to Gemini: $text');
       final stream = _chatSession.sendMessageStream(content);
 
       _streamSub = stream.listen(
@@ -60,7 +98,6 @@ class _AITutorScreenState extends State<AITutorScreen> {
           try {
             final part = resp.candidates.first.content.parts.first as TextPart;
             buffer = part.text;
-            print('🟩 Gemini stream response: $buffer');
 
             setState(() {
               if (_messages.isNotEmpty && _messages.last.startsWith('🤖: ')) {
@@ -69,26 +106,22 @@ class _AITutorScreenState extends State<AITutorScreen> {
                 _messages.add('🤖: $buffer');
               }
             });
+
+            _speak(buffer);
           } catch (e) {
-            print('🟥 Error processing response part: $e');
             setState(() {
               _messages.add('🤖: Failed to process response.');
             });
           }
         },
         onError: (error) {
-          print('🟥 Stream error: $error');
           setState(() {
             _messages.add('🤖: Failed to load response.');
           });
         },
-        onDone: () {
-          print('✅ Streaming completed.');
-        },
+        onDone: () {},
       );
-    } catch (e, stackTrace) {
-      print('🟥 Exception during sendMessageStream: $e');
-      print('🟥 StackTrace: $stackTrace');
+    } catch (e) {
       setState(() {
         _messages.add('🤖: Failed to load response.');
       });
@@ -170,9 +203,16 @@ class _AITutorScreenState extends State<AITutorScreen> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.mic, color: Colors.white),
+                      icon: Icon(
+                        _isListening ? Icons.mic : Icons.mic_none,
+                        color: Colors.white,
+                      ),
                       onPressed: () {
-                        // TODO: Add voice input functionality
+                        if (_isListening) {
+                          _stopListening();
+                        } else {
+                          _startListening();
+                        }
                       },
                     ),
                     Expanded(
@@ -180,7 +220,7 @@ class _AITutorScreenState extends State<AITutorScreen> {
                         controller: _controller,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          hintText: 'Type your message...',
+                          hintText: 'Type or speak your message...',
                           hintStyle: TextStyle(color: Colors.grey.shade400),
                           border: InputBorder.none,
                         ),
