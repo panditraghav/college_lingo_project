@@ -4,6 +4,7 @@ from fastapi import APIRouter, Response, status
 from google import genai
 from uuid import uuid4
 from google.genai.chats import AsyncChat
+from google.genai.types import GenerateContentConfig
 from pydantic import BaseModel
 import os
 
@@ -38,7 +39,7 @@ async def audio_consumer(queue: Queue[str], file_paths: list[str]):
             file_paths.append(path)
         queue.task_done()
 
-default_chat = client.aio.chats.create(model='gemini-2.0-flash')
+default_chat = client.aio.chats.create(model='gemini-2.0-flash', config = GenerateContentConfig(system_instruction= "You are a AI english tutor of Lingo English Learning application, you have to explain all the doubts that the user have. You have to generate text like you are talking to a person, so the output text should have natural flow. Instead of it being formatted for reading, it have to be generated for listening. Don't output text in markdown format, just plain text."))
 
 @ai_router.post("/chat/{chat_id}", status_code= status.HTTP_200_OK)
 async def post_chat_message(chat_id: str, message: ChatMessage, response: Response):
@@ -53,7 +54,12 @@ async def post_chat_message(chat_id: str, message: ChatMessage, response: Respon
 
     queue = asyncio.Queue[str]()
     file_paths: list[str] = []
-    consumer = asyncio.create_task(audio_consumer(queue, file_paths))
+    consumers = []
+
+    for i in range(3):
+        consumers.append(asyncio.create_task(audio_consumer(queue, file_paths)))
+        consumers.append(asyncio.create_task(audio_consumer(queue, file_paths)))
+        consumers.append(asyncio.create_task(audio_consumer(queue, file_paths)))
 
     print("Consumer created!")
 
@@ -83,7 +89,9 @@ async def post_chat_message(chat_id: str, message: ChatMessage, response: Respon
     await queue.put(sentence)
     await queue.join()
     print(file_paths)
-    consumer.cancel()
+
+    for consumer in consumers:
+        consumer.cancel()
 
     final_audio_file = combine_wav(file_paths)
 

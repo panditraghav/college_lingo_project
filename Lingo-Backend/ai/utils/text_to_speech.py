@@ -7,7 +7,7 @@ import struct
 from uuid import uuid4
 
 def save_binary_file(file_name: str, data: bytes | None):
-    f = open(file_name, "wb")
+    f = open("./assets/generated_audio/" + file_name, "wb")
     f.write(data or bytes())
     f.close()
     print(f"File saved to to: {file_name}")
