@@ -10,7 +10,7 @@ def save_binary_file(file_name: str, data: bytes | None):
     f = open("./assets/generated_audio/" + file_name, "wb")
     f.write(data or bytes())
     f.close()
-    print(f"File saved to to: {file_name}")
+    print(f"File saved to to: ./assets/generated_audio/{file_name}")
 
 def generate_audio(text: str) -> str:
     client = genai.Client(
