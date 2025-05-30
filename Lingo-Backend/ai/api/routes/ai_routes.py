@@ -169,7 +169,7 @@ async def kokoro_post_chat(chat_id: str, message: ChatMessage, response: Respons
         final_audio_file = combine_wav(file_paths)
         delete_files(file_paths)
 
-        return {"text": full_text, "final_audio_file": final_audio_file}
+        return {"text": full_text, "final_audio_file": final_audio_file[1:]}
 
     except asyncio.CancelledError:
         print("Request cancelled!")
