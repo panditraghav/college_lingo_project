@@ -2,10 +2,10 @@ import asyncio
 from asyncio import Queue
 from fastapi import APIRouter, Response, HTTPException, status
 from google import genai
-from uuid import uuid4
 from google.genai.chats import AsyncChat
 from google.genai.types import GenerateContentConfig
 from pydantic import BaseModel
+import requests
 import os
 
 from utils.files import delete_files
@@ -19,11 +19,26 @@ chats_dict: dict[str, AsyncChat] = {}
 
 client = genai.Client(api_key=os.environ.get("GOOGLE_AI_STUDIO_KEY"))
 
+nodejs_base_url = os.environ.get("NODEJS_BASE_URL")
+
+def create_new_chat():
+    return client.aio.chats.create(model='gemini-2.0-flash', config = GenerateContentConfig(system_instruction= "You are a AI english tutor of Lingo English Learning application, you have to explain all the doubts that the user have. You have to generate text which will be input to a text-to-speech model, so you have to generate text which doesn't have formattings like bullet points, headings, etc. Don't output text in markdown format, just plain text."))
+
 @ai_router.get("/new-chat")
 def new_chat():
-    id = uuid4()
-    chats_dict[id.__str__()] = client.aio.chats.create(model='gemini-2.0-flash')
-    return {"chatId": id}
+    try:
+        res = requests.get(f"{nodejs_base_url}/chat/new");
+        new_chat = res.json()
+        new_chat_id = new_chat.get("_id")
+
+        print("New chat created!", new_chat_id)
+        if new_chat_id == None:
+            raise HTTPException(status_code=500, detail="Internal server error, new_chat_id is none")
+
+        chats_dict[f"{new_chat_id}"] = create_new_chat()
+        return {"chatId": new_chat_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
 
 
 class ChatMessage(BaseModel):
@@ -41,14 +56,20 @@ async def audio_consumer(queue: Queue[str], file_paths: list[str]):
             file_paths.append(path)
         queue.task_done()
 
-default_chat = client.aio.chats.create(model='gemini-2.0-flash', config = GenerateContentConfig(system_instruction= "You are a AI english tutor of Lingo English Learning application, you have to explain all the doubts that the user have. You have to generate text which will be input to a text-to-speech model, so you have to generate text which doesn't have formattings like bullet points, headings, etc. Don't output text in markdown format, just plain text."))
 
 @ai_router.post("/chat/{chat_id}", status_code= status.HTTP_200_OK)
 async def post_chat_message(chat_id: str, message: ChatMessage, response: Response):
     print("chat_id: ", chat_id)
     print("Chat message: ", message)
-    # current_chat = chats_dict.get(chat_id)
-    current_chat = default_chat
+    current_chat = chats_dict.get(chat_id)
+    if current_chat == None:
+        raise HTTPException(status_code=404, detail=f"Unable to find chat with chatid: {chat_id}")
+
+    try:
+        res = requests.put(f"{nodejs_base_url}/chat/{chat_id}", json = {"role": "user", "message": message.text})
+        print(f"/chat/{chat_id}:\n {res.json()}")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Unable to update chat!, {e}")
 
     if current_chat == None:
         response.status_code = status.HTTP_404_NOT_FOUND
@@ -125,15 +146,18 @@ async def kokoro_post_chat(chat_id: str, message: ChatMessage, response: Respons
     file_paths: list[str] = []
     consumers = []
 
+    current_chat = chats_dict.get(chat_id)
+    if current_chat == None:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return {"message": "Chat not found!, please create new chat"}
+
+
     for _ in range(3):
         consumers.append(asyncio.create_task(kokoro_tts_consumer(queue, file_paths)))
     try: 
         print("Chat message: ", message)
-        current_chat = default_chat
-
-        if current_chat == None:
-            response.status_code = status.HTTP_404_NOT_FOUND
-            return {"message": "Chat not found!, please create new chat"}
+        res = requests.put(f"{nodejs_base_url}/chat/{chat_id}", json = {"role": "user", "message": message.text})
+        print(f"Chat updated {chat_id}:", res.json()["success"])
 
         sentence = ""
         full_text = ""
@@ -168,6 +192,9 @@ async def kokoro_post_chat(chat_id: str, message: ChatMessage, response: Respons
 
         final_audio_file = combine_wav(file_paths)
         delete_files(file_paths)
+
+        res = requests.put(f"{nodejs_base_url}/chat/{chat_id}", json = {"role": "model", "message": full_text, "audio":  final_audio_file[1:]})
+        print(f"Chat updated {chat_id}:", res.json()["success"])
 
         return {"text": full_text, "final_audio_file": final_audio_file[1:]}
 
