@@ -21,7 +21,6 @@ const isAuthenticated = async (req, res, next) => {
         }
 
         req.id = decode.userID;
-        console.log("User ID set in middleware:", req.id); // Debug here
         next();
 
     } catch (error) {
