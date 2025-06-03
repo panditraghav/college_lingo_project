@@ -70,10 +70,10 @@ export const getBeginnerLessons = async (req, res) => {
       };
     });
 
-    res.status(200).json(lessonsWithStatus);
+    res.status(200).json({beginnerLessons:lessonsWithStatus, success: true,});
   } catch (error) {
     console.error("Error fetching beginner lessons with status:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error", success: false });
   }
 };
 
@@ -97,10 +97,10 @@ export const getIntermediateLessons = async (req, res) => {
       };
     });
 
-    res.status(200).json(lessonsWithStatus);
+    res.status(200).json({intermediateLessons:lessonsWithStatus, success: true});
   } catch (error) {
     console.error("Error fetching intermediate lessons with status:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error", success: false });
   }
 };
 
@@ -123,10 +123,10 @@ export const getAdvancedLessons = async (req, res) => {
       };
     });
 
-    res.status(200).json(lessonsWithStatus);
+    res.status(200).json({advancedLesson: lessonsWithStatus, success:true});
   } catch (error) {
     console.error("Error fetching advanced lessons with status:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error", success: false });
   }
 };
 
@@ -148,10 +148,10 @@ export const postLesson = async (req, res) => {
     });
 
     const savedLesson = await newLesson.save();
-    res.status(201).json({ message: "Lesson created successfully", lesson: savedLesson });
+    res.status(200).json({ message: "Lesson created successfully", lesson: savedLesson, success:true});
   } catch (err) {
     console.error("Error creating lesson:", err);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Internal Server Error", success: false });
   }
 };
 
@@ -184,10 +184,10 @@ export const updateLessonStatus = async (req, res) => {
     }
 
     await user.save();
-    res.status(200).json({ message: "Lesson marked as completed" });
+    res.status(200).json({ message: "Lesson marked as completed", success:true });
   } catch (error) {
     console.error("Error completing lesson:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error",success:false });
   }
 };
 

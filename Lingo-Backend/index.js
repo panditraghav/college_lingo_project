@@ -5,6 +5,7 @@ import connectDB from "./utils/db.js";
 import userRoutes from "./routes/user.route.js";
 import lessonRoutes from "./routes/lesson.route.js";
 import testRoutes from "./routes/test.route.js"
+import { register } from "./controllers/user.controller.js";
 
 dotenv.config({});
 const app = express();
@@ -25,3 +26,4 @@ app.listen(PORT, () => {
   connectDB();
   console.log(`server running at port ${PORT}`);
 });
+

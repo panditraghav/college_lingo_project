@@ -59,7 +59,7 @@ export const register = async (req, res) => {
                 error: dbErr.message
             });
         }
-        res.status(201).json({
+        res.status(200).json({
             message: "Account created successfully!",
             success: true
         })
