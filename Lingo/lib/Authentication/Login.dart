@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:lingo/services/api_service.dart';
+
 class Login extends StatefulWidget {
   const Login({super.key});
 
@@ -14,25 +16,32 @@ class _LoginState extends State<Login> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool obscurePassword = true;
+  final ApiService _apiService = ApiService(); // Create an instance
 
   bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeApiService();
+  }
+
+  Future<void> _initializeApiService() async {
+    await _apiService.dio; // Ensure _setupDio has completed
+    setState(() {}); // Rebuild to ensure Dio is ready
+  }
 
   Future<void> _submitLoginForm() async {
     if (_formKey.currentState!.validate()) {
       setState(() => isLoading = true);
 
-      final url = Uri.parse(
-        'https://your-api-endpoint.com/login',
-      ); // Replace with real endpoint
       try {
-        final response = await http.post(
-          url,
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'email': _emailController.text,
-            'password': _passwordController.text,
-          }),
+        final response = await _apiService.login(
+          _emailController.text,
+          _passwordController.text,
         );
+
+        print(response);
 
         if (response.statusCode == 200) {
           // Handle success
@@ -44,7 +53,7 @@ class _LoginState extends State<Login> {
         } else {
           // Handle error
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Login Failed: ${response.body}')),
+            SnackBar(content: Text('Login Failed: ${response.data}')),
           );
         }
       } catch (e) {

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io'; // For Directory
 
 class ApiService {
@@ -35,17 +36,17 @@ class ApiService {
     // _dio.interceptors.add(LogInterceptor(responseBody: true, requestBody: true));
 
     // Optional: Set base options for Dio
-    _dio.options.baseUrl = 'https://your-api-base-url.com';
+    _dio.options.baseUrl = dotenv.env['NODE_BACKEND_BASE']!;
     _dio.options.connectTimeout = const Duration(seconds: 5); // 5 seconds
     _dio.options.receiveTimeout = const Duration(seconds: 3); // 3 seconds
   }
 
   // Example API calls
-  Future<Response> login(String username, String password) async {
+  Future<Response> login(String email, String password) async {
     try {
       final response = await _dio.post(
-        '/login',
-        data: {'username': username, 'password': password},
+        '/user/login',
+        data: {'email': email, 'password': password},
       );
       return response;
     } on DioException catch (e) {
