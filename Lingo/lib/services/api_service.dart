@@ -66,6 +66,12 @@ class ApiService {
     }
   }
 
+  Future<String> getCookie() async {
+    final c = await _cookieJar.toString();
+    print("COOKIE: $c");
+    return c;
+  }
+
   Future<void> clearCookies() async {
     await _cookieJar.deleteAll();
     print('All cookies cleared.');

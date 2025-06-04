@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:lingo/Authentication/AuthScreen.dart';
+import 'package:lingo/services/api_service.dart';
 
 class Splashscreen extends StatefulWidget {
   const Splashscreen({super.key});
@@ -17,11 +18,25 @@ class _SplashscreenState extends State<Splashscreen>
   double _opacity = 0.0;
   double _scale = 1.0;
   late AnimationController _controller;
+  final ApiService _apiService = ApiService();
+
+  void test() async {
+    print("Cookie from function!");
+    final cookie = await _apiService.getCookie();
+    print(cookie);
+  }
+
+  Future<void> _initializeApiService() async {
+    await _apiService.dio; // Ensure _setupDio has completed
+    setState(() {}); // Rebuild to ensure Dio is ready
+  }
 
   @override
   void initState() {
     _playSound();
     super.initState();
+    _initializeApiService();
+    test();
 
     // Initialize animation controller
     _controller = AnimationController(
