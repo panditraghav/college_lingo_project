@@ -42,13 +42,10 @@ class _SplashscreenState extends State<Splashscreen>
 
     // Navigate to next screen after delay
     Timer(const Duration(seconds: 4), () async {
-      print("!!!!!!SPLASH!!!!!");
       final token = await _storage.read(key: 'token');
-      print("Token: $token");
 
       if (!mounted) return;
       if (token == null) {
-        print("Null token!");
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const Authscreen()),
@@ -56,7 +53,8 @@ class _SplashscreenState extends State<Splashscreen>
       } else {
         try {
           if (JwtDecoder.isExpired(token)) {
-            print("expired!!! auth");
+            await _storage.delete(key: 'token');
+            if (!mounted) return;
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const Authscreen()),
@@ -65,7 +63,7 @@ class _SplashscreenState extends State<Splashscreen>
             Navigator.pushReplacementNamed(context, '/home');
           }
         } catch (e) {
-          print("JWT error $e");
+          if (!mounted) return;
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const Authscreen()),

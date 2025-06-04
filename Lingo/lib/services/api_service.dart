@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:logger/logger.dart';
 
 class ApiService {
   final _dio = Dio();
   final _storage = FlutterSecureStorage();
+  final logger = Logger();
 
   ApiService() {
     _dio.options.baseUrl = dotenv.env['NODE_BACKEND_BASE']!;
@@ -17,7 +19,7 @@ class ApiService {
         ) async {
           final token = await _storage.read(key: "token");
           if (token != null) {
-            options.headers['Authorization'] = token;
+            options.headers['Authorization'] = "Bearer $token";
           }
           return handler.next(options);
         },
@@ -38,6 +40,17 @@ class ApiService {
     } on DioException catch (e) {
       // Handle Dio errors (e.g., network issues, server errors)
       print('Login error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Response> getBeginnerLessons() async {
+    try {
+      final response = await _dio.get('/lessons/getbeginnerlessons');
+      return response;
+    } on DioException catch (e) {
+      // Handle Dio errors (e.g., network issues, server errors)
+      logger.e('Login error: $e');
       rethrow;
     }
   }
