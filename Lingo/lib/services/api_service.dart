@@ -1,45 +1,31 @@
 import 'package:dio/dio.dart';
-import 'package:cookie_jar/cookie_jar.dart';
-import 'package:dio_cookie_manager/dio_cookie_manager.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:io'; // For Directory
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiService {
-  late Dio _dio;
-  late PersistCookieJar _cookieJar;
+  final _dio = Dio();
+  final _storage = FlutterSecureStorage();
 
   ApiService() {
-    _dio = Dio();
-    _setupDio();
+    _dio.options.baseUrl = dotenv.env['NODE_BACKEND_BASE']!;
+
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (
+          RequestOptions options,
+          RequestInterceptorHandler handler,
+        ) async {
+          final token = await _storage.read(key: "token");
+          if (token != null) {
+            options.headers['Authorization'] = token;
+          }
+          return handler.next(options);
+        },
+      ),
+    );
   }
 
   Dio get dio => _dio; // Getter to access the Dio instance
-
-  Future<void> _setupDio() async {
-    // Get application documents directory for persistent cookies
-    final appDocDir = await getApplicationDocumentsDirectory();
-    final String appDocPath = appDocDir.path;
-    final String cookieDirPath = '$appDocPath/cookies';
-    final Directory cookieDir = Directory(cookieDirPath);
-
-    if (!await cookieDir.exists()) {
-      await cookieDir.create(recursive: true);
-    }
-
-    _cookieJar = PersistCookieJar(storage: FileStorage(cookieDirPath));
-
-    // Add CookieManager to Dio
-    _dio.interceptors.add(CookieManager(_cookieJar));
-
-    // Optional: Add other interceptors like LogInterceptor for debugging
-    // _dio.interceptors.add(LogInterceptor(responseBody: true, requestBody: true));
-
-    // Optional: Set base options for Dio
-    _dio.options.baseUrl = dotenv.env['NODE_BACKEND_BASE']!;
-    _dio.options.connectTimeout = const Duration(seconds: 5); // 5 seconds
-    _dio.options.receiveTimeout = const Duration(seconds: 3); // 3 seconds
-  }
 
   // Example API calls
   Future<Response> login(String email, String password) async {
@@ -64,16 +50,5 @@ class ApiService {
       print('Get profile error: $e');
       rethrow;
     }
-  }
-
-  Future<String> getCookie() async {
-    final c = await _cookieJar.toString();
-    print("COOKIE: $c");
-    return c;
-  }
-
-  Future<void> clearCookies() async {
-    await _cookieJar.deleteAll();
-    print('All cookies cleared.');
   }
 }

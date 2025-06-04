@@ -45,10 +45,10 @@ dependencies:
   pdf: ^3.11.3
   printing: ^5.14.2
   dio: ^5.8.0+1
-  cookie_jar: ^4.0.8
-  dio_cookie_manager: ^3.2.0
-  path_provider: ^2.1.5
   flutter_dotenv: ^5.2.1
+  flutter_secure_storage: ^9.2.4
+  jwt_decoder: ^2.0.1
+  logger: ^2.5.0
 
 flutter_native_splash:
   color: "#000000" # Set the same black color as your Flutter splash background

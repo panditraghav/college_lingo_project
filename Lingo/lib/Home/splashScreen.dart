@@ -1,9 +1,10 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'dart:async';
 
 import 'package:lingo/Authentication/AuthScreen.dart';
-import 'package:lingo/services/api_service.dart';
 
 class Splashscreen extends StatefulWidget {
   const Splashscreen({super.key});
@@ -18,25 +19,12 @@ class _SplashscreenState extends State<Splashscreen>
   double _opacity = 0.0;
   double _scale = 1.0;
   late AnimationController _controller;
-  final ApiService _apiService = ApiService();
-
-  void test() async {
-    print("Cookie from function!");
-    final cookie = await _apiService.getCookie();
-    print(cookie);
-  }
-
-  Future<void> _initializeApiService() async {
-    await _apiService.dio; // Ensure _setupDio has completed
-    setState(() {}); // Rebuild to ensure Dio is ready
-  }
+  final _storage = FlutterSecureStorage();
 
   @override
   void initState() {
     _playSound();
     super.initState();
-    _initializeApiService();
-    test();
 
     // Initialize animation controller
     _controller = AnimationController(
@@ -53,11 +41,37 @@ class _SplashscreenState extends State<Splashscreen>
     });
 
     // Navigate to next screen after delay
-    Timer(const Duration(seconds: 4), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Authscreen()),
-      );
+    Timer(const Duration(seconds: 4), () async {
+      print("!!!!!!SPLASH!!!!!");
+      final token = await _storage.read(key: 'token');
+      print("Token: $token");
+
+      if (!mounted) return;
+      if (token == null) {
+        print("Null token!");
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Authscreen()),
+        );
+      } else {
+        try {
+          if (JwtDecoder.isExpired(token)) {
+            print("expired!!! auth");
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const Authscreen()),
+            );
+          } else {
+            Navigator.pushReplacementNamed(context, '/home');
+          }
+        } catch (e) {
+          print("JWT error $e");
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const Authscreen()),
+          );
+        }
+      }
     });
   }
 
