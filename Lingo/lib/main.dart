@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:lingo/AI_Tutor.dart';
-import 'package:lingo/Authentication/AuthScreen.dart';
 import 'package:lingo/Authentication/Login.dart';
 import 'package:lingo/Authentication/Sign_in.dart';
 import 'package:lingo/Lessons/Lesson_Screen.dart';
