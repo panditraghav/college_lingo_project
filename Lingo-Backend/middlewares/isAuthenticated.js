@@ -4,7 +4,15 @@ const isAuthenticated = async (req, res, next) => {
 
     try {
 
-        const token = req.cookies.token;
+        let token;
+        let bearer = req.headers['authorization'];
+        if (!bearer) {
+            token = req.cookies.token;
+            console.log("isAuthenticatedMW Token(Cookie)");
+        } else {
+            token = bearer.slice(7);
+            console.log("isAuthenticatedMW Token(Header)");
+        }
         if (!token) {
             return res.status(401).json({
                 message: "User not authenticated!",
