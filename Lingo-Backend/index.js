@@ -5,8 +5,8 @@ import connectDB from "./utils/db.js";
 import userRoutes from "./routes/user.route.js";
 import chatRoutes from "./routes/chat.route.js";
 import lessonRoutes from "./routes/lesson.route.js";
-import testRoutes from "./routes/test.route.js"
-// import morgan from "morgan";
+import testRoutes from "./routes/test.route.js";
+import morgan from "morgan";
 import { register } from "./controllers/user.controller.js";
 
 dotenv.config({});
@@ -16,7 +16,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-// app.use(morgan('combined'));
+app.use(morgan("combined"));
 const PORT = 3000;
 
 // API's :
@@ -30,4 +30,3 @@ app.listen(PORT, () => {
   connectDB();
   console.log(`server running at port ${PORT}`);
 });
-
