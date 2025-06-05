@@ -38,127 +38,139 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       drawer: const AppDrawer(),
       backgroundColor: const Color(0xFF1A1A1A),
-      body: Stack(
-        children: [
-          Positioned(
-            top: -100,
-            left: -100,
-            child: _blurredCircle(200, Colors.deepPurpleAccent),
-          ),
-          Positioned(
-            bottom: -120,
-            right: -80,
-            child: _blurredCircle(180, Colors.tealAccent),
-          ),
-          Positioned(
-            top: 100,
-            right: -50,
-            child: _blurredCircle(100, Colors.purple.withOpacity(0.3)),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                Center(
-                  child: Image.asset('assets/images/lingoo2.png', height: 180),
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  'Welcome to Lingo!',
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  'AI-Based Foreign Language Learning Platform',
-                  style: TextStyle(fontSize: 14, color: Colors.white70),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 30),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Stack(
+            children: [
+              Positioned(
+                top: -100,
+                left: -100,
+                child: _blurredCircle(200, Colors.deepPurpleAccent),
+              ),
+              Positioned(
+                bottom: -120,
+                right: -80,
+                child: _blurredCircle(180, Colors.tealAccent),
+              ),
+              Positioned(
+                top: 100,
+                right: -50,
+                child: _blurredCircle(100, Colors.purple.withOpacity(0.3)),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
                   children: [
-                    _buildActionButton(
-                      icon: Icons.smart_toy,
-                      label: "AI Tutor",
-                      color: Colors.yellow[700]!,
-                      onTap: () => Navigator.pushNamed(context, '/ai_tutor'),
+                    const SizedBox(height: 20),
+                    Center(
+                      child: Image.asset(
+                        'assets/images/lingoo2.png',
+                        height: 180,
+                      ),
                     ),
-                    _buildActionButton(
-                      icon: Icons.book,
-                      label: "Lessons",
-                      color: Colors.lightBlue,
-                      onTap: () => Navigator.pushNamed(context, '/lesson'),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Welcome to Lingo!',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                    _buildActionButton(
-                      icon: Icons.quiz,
-                      label: "Test",
-                      color: Colors.redAccent,
-                      onTap: () => Navigator.pushNamed(context, '/pretest'),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'AI-Based Foreign Language Learning Platform',
+                      style: TextStyle(fontSize: 14, color: Colors.white70),
+                      textAlign: TextAlign.center,
                     ),
-                    _buildActionButton(
-                      icon: Icons.person_4_outlined,
-                      label: "Profile",
-                      color: Colors.green,
-                      onTap: () => Navigator.pushNamed(context, '/profile'),
+                    const SizedBox(height: 30),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: [
+                        _buildActionButton(
+                          icon: Icons.smart_toy,
+                          label: "AI Tutor",
+                          color: Colors.yellow[700]!,
+                          onTap:
+                              () => Navigator.pushNamed(context, '/ai_tutor'),
+                        ),
+                        _buildActionButton(
+                          icon: Icons.book,
+                          label: "Lessons",
+                          color: Colors.lightBlue,
+                          onTap: () => Navigator.pushNamed(context, '/lesson'),
+                        ),
+                        _buildActionButton(
+                          icon: Icons.quiz,
+                          label: "Test",
+                          color: Colors.redAccent,
+                          onTap: () => Navigator.pushNamed(context, '/pretest'),
+                        ),
+                        _buildActionButton(
+                          icon: Icons.person_4_outlined,
+                          label: "Profile",
+                          color: Colors.green,
+                          onTap: () => Navigator.pushNamed(context, '/profile'),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 30),
+                    GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/progress'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 20,
+                          horizontal: 20,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[900],
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.greenAccent,
+                              blurRadius: 6,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              "Your Learning Progress",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            LinearProgressIndicator(
+                              value: 0.65,
+                              backgroundColor: Colors.white24,
+                              color: Colors.greenAccent,
+                              minHeight: 8,
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              "65% completed",
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
                   ],
                 ),
-                const SizedBox(height: 30),
-                GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/progress'),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 20,
-                      horizontal: 20,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[900],
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.greenAccent,
-                          blurRadius: 6,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          "Your Learning Progress",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        LinearProgressIndicator(
-                          value: 0.65,
-                          backgroundColor: Colors.white24,
-                          color: Colors.greenAccent,
-                          minHeight: 8,
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          "65% completed",
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
