@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:lingo/Lessons/Beginner_Lesson_Detail.dart';
-import 'package:lingo/models/beginner_lessons.dart';
 import 'package:lingo/services/api_service.dart';
 
 class BeginnerLessonsScreen extends StatefulWidget {
@@ -13,12 +12,6 @@ class BeginnerLessonsScreen extends StatefulWidget {
 class _BeginnerLessonsScreenState extends State<BeginnerLessonsScreen> {
   final _apiService = ApiService();
   final dynamic lessons = null;
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,16 +30,15 @@ class _BeginnerLessonsScreenState extends State<BeginnerLessonsScreen> {
         future: _apiService.getBeginnerLessons(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return CircularProgressIndicator();
+            return Center(child: CircularProgressIndicator());
           }
           final lessons = snapshot.data?.beginnerLessons;
           if (lessons == null) {
-            print("Lesson null");
-            return CircularProgressIndicator();
+            return Center(child: Text("Unable to get lessons"));
           }
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: lessons.length ?? 0,
+            itemCount: lessons.length,
             itemBuilder: (context, index) {
               final lesson = lessons[index];
 
@@ -109,10 +101,7 @@ class _BeginnerLessonsScreenState extends State<BeginnerLessonsScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:
-                            (_) => BeginnerLessonDetail(
-                              lessonTitle: lesson.title ?? "",
-                            ),
+                        builder: (_) => BeginnerLessonDetail(lesson: lesson),
                       ),
                     );
                   },

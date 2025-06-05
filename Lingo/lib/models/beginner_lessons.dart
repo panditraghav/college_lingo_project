@@ -1,14 +1,14 @@
-class BeginnerLessonModel {
-  List<BeginnerLessons>? beginnerLessons;
+class BeginnerLessonsModel {
+  List<BeginnerLessonModel>? beginnerLessons;
   bool? success;
 
-  BeginnerLessonModel({this.beginnerLessons, this.success});
+  BeginnerLessonsModel({this.beginnerLessons, this.success});
 
-  BeginnerLessonModel.fromJson(Map<String, dynamic> json) {
+  BeginnerLessonsModel.fromJson(Map<String, dynamic> json) {
     if (json['beginnerLessons'] != null) {
-      beginnerLessons = <BeginnerLessons>[];
+      beginnerLessons = <BeginnerLessonModel>[];
       json['beginnerLessons'].forEach((v) {
-        beginnerLessons!.add(new BeginnerLessons.fromJson(v));
+        beginnerLessons!.add(new BeginnerLessonModel.fromJson(v));
       });
     }
     success = json['success'];
@@ -25,7 +25,7 @@ class BeginnerLessonModel {
   }
 }
 
-class BeginnerLessons {
+class BeginnerLessonModel {
   String? sId;
   int? index;
   String? level;
@@ -37,7 +37,7 @@ class BeginnerLessons {
   int? iV;
   String? status;
 
-  BeginnerLessons({
+  BeginnerLessonModel({
     this.sId,
     this.index,
     this.level,
@@ -50,7 +50,7 @@ class BeginnerLessons {
     this.status,
   });
 
-  BeginnerLessons.fromJson(Map<String, dynamic> json) {
+  BeginnerLessonModel.fromJson(Map<String, dynamic> json) {
     sId = json['_id'];
     index = json['index'];
     level = json['level'];

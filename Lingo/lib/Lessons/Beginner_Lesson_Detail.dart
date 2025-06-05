@@ -1,33 +1,14 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:lingo/models/beginner_lessons.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 class BeginnerLessonDetail extends StatelessWidget {
-  final String lessonTitle;
+  final BeginnerLessonModel lesson;
 
-  const BeginnerLessonDetail({super.key, required this.lessonTitle});
-
-  // Simulated backend data
-  Future<Map<String, String>> fetchLessonDetails(String title) async {
-    await Future.delayed(const Duration(seconds: 2)); // Simulate network delay
-
-    Map<String, String> data = {
-      'Basic Greetings':
-          'Learn how to say hello, goodbye, and introduce yourself.',
-      'Common Phrases': 'Essential phrases used in everyday conversation.',
-      'Numbers & Counting': 'Learn to count and use numbers in sentences.',
-      'Family & Friends': 'Talk about your family and make friends.',
-      'Daily Activities': 'Describe your routine and daily habits.',
-      'Simple Questions': 'Ask and answer basic questions correctly.',
-    };
-
-    return {
-      'title': title,
-      'description': data[title] ?? 'Study material not found.',
-    };
-  }
+  const BeginnerLessonDetail({super.key, required this.lesson});
 
   Future<Uint8List> _generatePdf(String title, String description) async {
     final pdf = pw.Document();
@@ -93,10 +74,9 @@ class BeginnerLessonDetail extends StatelessWidget {
                     ),
 
                     onPressed: () async {
-                      final lessonData = await fetchLessonDetails(lessonTitle);
                       final pdfData = await _generatePdf(
-                        lessonData['title']!,
-                        lessonData['description']!,
+                        lesson.title ?? "",
+                        lesson.content?.join("\n") ?? "",
                       );
 
                       await Printing.layoutPdf(
@@ -110,69 +90,50 @@ class BeginnerLessonDetail extends StatelessWidget {
           ),
         ],
       ),
-      body: FutureBuilder<Map<String, String>>(
-        future: fetchLessonDetails(lessonTitle),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: Colors.cyanAccent),
-            );
-          } else if (snapshot.hasError) {
-            return const Center(
-              child: Text(
-                'Failed to load data',
-                style: TextStyle(color: Colors.red),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              lesson.title ?? "",
+              style: const TextStyle(
+                color: Colors.cyanAccent,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
-            );
-          } else {
-            final lessonData = snapshot.data!;
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    lessonData['title']!,
-                    style: const TextStyle(
-                      color: Colors.cyanAccent,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    lessonData['description']!,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      height: 1.5,
-                    ),
-                  ),
-                  const Spacer(),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.cyanAccent,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    onPressed: () async {
-                      await markLessonAsCompleted(lessonTitle);
-                      Navigator.pop(context); // or any other action
-                    },
-                    icon: const Icon(Icons.done),
-                    label: const Text('Done', style: TextStyle(fontSize: 16)),
-                  ),
-                ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              lesson.content?.join("\n") ?? "",
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                height: 1.5,
               ),
-            );
-          }
-        },
+            ),
+            const Spacer(),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.cyanAccent,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              onPressed: () async {
+                // await markLessonAsCompleted(lessonTitle);
+                // Navigator.pop(context); // or any other action
+              },
+              icon: const Icon(Icons.done),
+              label: const Text('Done', style: TextStyle(fontSize: 16)),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lingo/models/beginner_lessons.dart';
 import 'package:logger/logger.dart';
 
 class ApiService {
@@ -44,10 +45,11 @@ class ApiService {
     }
   }
 
-  Future<Response> getBeginnerLessons() async {
+  Future<BeginnerLessonsModel> getBeginnerLessons() async {
     try {
       final response = await _dio.get('/lessons/getbeginnerlessons');
-      return response;
+      final model = BeginnerLessonsModel.fromJson(response.data);
+      return model;
     } on DioException catch (e) {
       // Handle Dio errors (e.g., network issues, server errors)
       logger.e('Login error: $e');
