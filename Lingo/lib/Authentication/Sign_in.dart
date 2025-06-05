@@ -61,7 +61,7 @@ class _SignInState extends State<SignIn> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: const Text(
-          'Sign In',
+          'NEW USER',
           style: TextStyle(color: Colors.cyanAccent),
         ),
         centerTitle: true,

@@ -67,7 +67,7 @@ class _AuthscreenState extends State<Authscreen> {
                 // TODO: Navigate to sign-in screen
               },
               child: const Text(
-                'New User Register ',
+                'New User Registration ',
                 style: TextStyle(color: Colors.white70, fontSize: 18),
               ),
             ),
