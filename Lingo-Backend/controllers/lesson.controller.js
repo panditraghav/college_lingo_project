@@ -70,7 +70,7 @@ export const getBeginnerLessons = async (req, res) => {
       };
     });
 
-    res.status(200).json({beginnerLessons:lessonsWithStatus, success: true,});
+    res.status(200).json({lessons:lessonsWithStatus, success: true,});
   } catch (error) {
     console.error("Error fetching beginner lessons with status:", error);
     res.status(500).json({ message: "Internal server error", success: false });
@@ -97,7 +97,7 @@ export const getIntermediateLessons = async (req, res) => {
       };
     });
 
-    res.status(200).json({intermediateLessons:lessonsWithStatus, success: true});
+    res.status(200).json({lessons:lessonsWithStatus, success: true});
   } catch (error) {
     console.error("Error fetching intermediate lessons with status:", error);
     res.status(500).json({ message: "Internal server error", success: false });
@@ -123,7 +123,7 @@ export const getAdvancedLessons = async (req, res) => {
       };
     });
 
-    res.status(200).json({advancedLesson: lessonsWithStatus, success:true});
+    res.status(200).json({lessons: lessonsWithStatus, success:true});
   } catch (error) {
     console.error("Error fetching advanced lessons with status:", error);
     res.status(500).json({ message: "Internal server error", success: false });

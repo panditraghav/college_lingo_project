@@ -1,14 +1,14 @@
 class LessonsModel {
-  List<LessonModel>? beginnerLessons;
+  List<LessonModel>? lessons;
   bool? success;
 
-  LessonsModel({this.beginnerLessons, this.success});
+  LessonsModel({this.lessons, this.success});
 
   LessonsModel.fromJson(Map<String, dynamic> json) {
-    if (json['beginnerLessons'] != null) {
-      beginnerLessons = <LessonModel>[];
-      json['beginnerLessons'].forEach((v) {
-        beginnerLessons!.add(LessonModel.fromJson(v));
+    if (json['lessons'] != null) {
+      lessons = <LessonModel>[];
+      json['lessons'].forEach((v) {
+        lessons!.add(LessonModel.fromJson(v));
       });
     }
     success = json['success'];
@@ -16,9 +16,8 @@ class LessonsModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {};
-    if (beginnerLessons != null) {
-      data['beginnerLessons'] =
-          beginnerLessons!.map((v) => v.toJson()).toList();
+    if (lessons != null) {
+      data['lessons'] = lessons!.map((v) => v.toJson()).toList();
     }
     data['success'] = success;
     return data;

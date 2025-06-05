@@ -37,7 +37,7 @@ class _LessonsListScreenState extends State<LessonsListScreen> {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
           }
-          final lessons = snapshot.data?.beginnerLessons;
+          final lessons = snapshot.data?.lessons;
           if (lessons == null) {
             return Center(child: Text("Unable to get lessons"));
           }
