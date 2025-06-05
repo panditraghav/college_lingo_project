@@ -1,14 +1,16 @@
+//import 'dart:ffi';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:lingo/models/lessons.dart';
+import 'package:lingo/services/api_service.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 class LessonDetails extends StatelessWidget {
   final LessonModel lesson;
-
-  const LessonDetails({super.key, required this.lesson});
+  final _apiService = ApiService();
+  LessonDetails({super.key, required this.lesson});
 
   Future<Uint8List> _generatePdf(String title, String description) async {
     final pdf = pw.Document();
@@ -37,9 +39,10 @@ class LessonDetails extends StatelessWidget {
     return pdf.save();
   }
 
-  Future<void> markLessonAsCompleted(String title) async {
-    await Future.delayed(const Duration(seconds: 1)); // Simulate API
-    print('$title marked as completed');
+  Future<void> markLessonAsCompleted() async {
+    await Future.delayed(const Duration(seconds: 1));
+    _apiService.updateStatus(lesson.sId ?? " ");
+    // print('$title marked as completed');
   }
 
   @override
@@ -125,8 +128,8 @@ class LessonDetails extends StatelessWidget {
                 ),
               ),
               onPressed: () async {
-                // await markLessonAsCompleted(lessonTitle);
-                // Navigator.pop(context); // or any other action
+                await markLessonAsCompleted();
+                Navigator.pop(context);
               },
               icon: const Icon(Icons.done),
               label: const Text('Done', style: TextStyle(fontSize: 16)),

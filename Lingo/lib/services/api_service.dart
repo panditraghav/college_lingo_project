@@ -81,6 +81,16 @@ class ApiService {
     }
   }
 
+  Future<Response> updateStatus(String lessonId) async {
+    try {
+      final response = await _dio.post('/lessons/update/$lessonId');
+      return response;
+    } on DioException catch (e) {
+      logger.e('Unable to update : $e');
+      rethrow;
+    }
+  }
+
   Future<Response> getUserProfile() async {
     try {
       final response = await _dio.get('/profile');
