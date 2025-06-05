@@ -1,14 +1,14 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:lingo/models/beginner_lessons.dart';
+import 'package:lingo/models/lessons.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
-class BeginnerLessonDetail extends StatelessWidget {
-  final BeginnerLessonModel lesson;
+class LessonDetails extends StatelessWidget {
+  final LessonModel lesson;
 
-  const BeginnerLessonDetail({super.key, required this.lesson});
+  const LessonDetails({super.key, required this.lesson});
 
   Future<Uint8List> _generatePdf(String title, String description) async {
     final pdf = pw.Document();
@@ -72,11 +72,10 @@ class BeginnerLessonDetail extends StatelessWidget {
                       ),
                       elevation: 5,
                     ),
-
                     onPressed: () async {
                       final pdfData = await _generatePdf(
                         lesson.title ?? "",
-                        lesson.content?.join("\n") ?? "",
+                        lesson.content?.join("\n\n") ?? "",
                       );
 
                       await Printing.layoutPdf(
@@ -92,8 +91,8 @@ class BeginnerLessonDetail extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: ListView(
+          // crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
               lesson.title ?? "",
@@ -105,14 +104,14 @@ class BeginnerLessonDetail extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              lesson.content?.join("\n") ?? "",
+              lesson.content?.join("\n\n") ?? "",
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 height: 1.5,
               ),
             ),
-            const Spacer(),
+            SizedBox(height: 24),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.cyanAccent,

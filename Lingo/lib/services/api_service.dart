@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:lingo/models/beginner_lessons.dart';
+import 'package:lingo/models/lessons.dart';
 import 'package:logger/logger.dart';
 
 class ApiService {
@@ -40,15 +40,39 @@ class ApiService {
       return response;
     } on DioException catch (e) {
       // Handle Dio errors (e.g., network issues, server errors)
-      print('Login error: $e');
+      logger.e('Login error: $e');
       rethrow;
     }
   }
 
-  Future<BeginnerLessonsModel> getBeginnerLessons() async {
+  Future<LessonsModel> getBeginnerLessons() async {
     try {
       final response = await _dio.get('/lessons/getbeginnerlessons');
-      final model = BeginnerLessonsModel.fromJson(response.data);
+      final model = LessonsModel.fromJson(response.data);
+      return model;
+    } on DioException catch (e) {
+      // Handle Dio errors (e.g., network issues, server errors)
+      logger.e('Login error: $e');
+      rethrow;
+    }
+  }
+
+  Future<LessonsModel> getIntermediateLessons() async {
+    try {
+      final response = await _dio.get('/lessons/getintermediatelessons');
+      final model = LessonsModel.fromJson(response.data);
+      return model;
+    } on DioException catch (e) {
+      // Handle Dio errors (e.g., network issues, server errors)
+      logger.e('Login error: $e');
+      rethrow;
+    }
+  }
+
+  Future<LessonsModel> getAdvancedLessons() async {
+    try {
+      final response = await _dio.get('/lessons/getadvancedlessons');
+      final model = LessonsModel.fromJson(response.data);
       return model;
     } on DioException catch (e) {
       // Handle Dio errors (e.g., network issues, server errors)
@@ -62,7 +86,7 @@ class ApiService {
       final response = await _dio.get('/profile');
       return response;
     } on DioException catch (e) {
-      print('Get profile error: $e');
+      logger.e('Get profile error: $e');
       rethrow;
     }
   }

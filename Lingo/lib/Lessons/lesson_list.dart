@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:lingo/Lessons/Beginner_Lesson_Detail.dart';
-import 'package:lingo/services/api_service.dart';
+import 'package:lingo/Lessons/lesson_details.dart';
+import 'package:lingo/models/lessons.dart';
 
-class BeginnerLessonsScreen extends StatefulWidget {
-  const BeginnerLessonsScreen({super.key});
+class LessonsListScreen extends StatefulWidget {
+  final String title;
+  final Future<LessonsModel> Function() future;
+  const LessonsListScreen({
+    super.key,
+    required this.title,
+    required this.future,
+  });
 
   @override
-  State<BeginnerLessonsScreen> createState() => _BeginnerLessonsScreenState();
+  State<LessonsListScreen> createState() => _LessonsListScreenState();
 }
 
-class _BeginnerLessonsScreenState extends State<BeginnerLessonsScreen> {
-  final _apiService = ApiService();
+class _LessonsListScreenState extends State<LessonsListScreen> {
   final dynamic lessons = null;
 
   @override
@@ -20,14 +25,14 @@ class _BeginnerLessonsScreenState extends State<BeginnerLessonsScreen> {
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: Colors.black,
-        title: const Text(
-          'Beginner Lessons',
+        title: Text(
+          widget.title,
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
       body: FutureBuilder(
-        future: _apiService.getBeginnerLessons(),
+        future: widget.future(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
@@ -101,7 +106,7 @@ class _BeginnerLessonsScreenState extends State<BeginnerLessonsScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => BeginnerLessonDetail(lesson: lesson),
+                        builder: (_) => LessonDetails(lesson: lesson),
                       ),
                     );
                   },
