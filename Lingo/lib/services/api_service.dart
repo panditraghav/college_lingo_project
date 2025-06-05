@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lingo/models/lessons.dart';
+import 'package:lingo/models/tests_with_status.dart';
 import 'package:logger/logger.dart';
 
 class ApiService {
@@ -96,6 +97,16 @@ class ApiService {
     try {
       final response = await _dio.get('/profile');
       return response;
+    } on DioException catch (e) {
+      logger.e('Get profile error: $e');
+      rethrow;
+    }
+  }
+
+  Future<TestsWithStatus> getTestsWithStatus() async {
+    try {
+      final response = await _dio.get('/test/get');
+      return TestsWithStatus.fromJson(response.data);
     } on DioException catch (e) {
       logger.e('Get profile error: $e');
       rethrow;
