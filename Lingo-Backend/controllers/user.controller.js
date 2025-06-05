@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js"
+import { Lesson } from "../models/lesson.model.js"
 
 
 export const register = async (req, res) => {
@@ -235,3 +236,30 @@ export const updateProfile = async (req, res) => {
 
     }
 }
+
+export const userProgress = async (req, res) => {
+    try {
+        const userId = req.id; // Ensure authenticate middleware attaches user object
+
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const totalLessons = await Lesson.countDocuments();
+        if (totalLessons === 0) {
+            return res.status(200).json({ progress: 0, message: "No lessons available" });
+        }
+
+        const completedCount = user.lessonProgress.filter(lp => lp.status === "Completed").length;
+
+        const progressPercentage = Math.round((completedCount / totalLessons) * 100);
+
+        return res.status(200).json({
+            success: true,
+            progress: progressPercentage,
+            completed: completedCount,
+            totalLessons
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, error: error.message });
+    }
+};

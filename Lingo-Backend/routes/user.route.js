@@ -1,5 +1,5 @@
 import express from "express";
-import { register } from "../controllers/user.controller.js";
+import { register, userProgress } from "../controllers/user.controller.js";
 import { login } from "../controllers/user.controller.js";
 import { updateProfile } from "../controllers/user.controller.js";
 import { logout } from "../controllers/user.controller.js";
@@ -12,6 +12,7 @@ router.route("/register").post(singleUpload, register);
 router.route("/login").post(login);
 router.route("/logout").post(isAuthenticated,logout);
 router.route("/profile/update").post(isAuthenticated, singleUpload, updateProfile);
+router.route("/progress").get(isAuthenticated, userProgress);
 
 export default router;
 
