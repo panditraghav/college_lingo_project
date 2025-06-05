@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:lingo/Lessons/Expert.dart';
-import 'package:lingo/Lessons/Intermediate.dart';
+import 'package:lingo/Lessons/lesson_list.dart';
+import 'package:lingo/services/api_service.dart';
 import '../Home/Appdrawer.dart';
-import 'Beginner.dart';
 
 class LessonOverviewScreen extends StatelessWidget {
-  const LessonOverviewScreen({super.key});
+  LessonOverviewScreen({super.key});
+  final _apiService = ApiService();
 
   // Make levels static const so it can be initialized here
   static const List<Map<String, String>> levels = [
@@ -61,21 +61,33 @@ class LessonOverviewScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => BeginnerLessonsScreen(),
+                      builder:
+                          (context) => LessonsListScreen(
+                            title: "${level['name']} Lessons",
+                            future: _apiService.getBeginnerLessons,
+                          ),
                     ),
                   );
                 } else if (level['name'] == 'Intermediate') {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => IntermediateLessonsScreen(),
+                      builder:
+                          (context) => LessonsListScreen(
+                            title: "${level['name']} Lessons",
+                            future: _apiService.getIntermediateLessons,
+                          ),
                     ),
                   );
                 } else if (level['name'] == 'Expert') {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ExpertLessonsScreen(),
+                      builder:
+                          (context) => LessonsListScreen(
+                            title: "${level['name']} Lessons",
+                            future: _apiService.getAdvancedLessons,
+                          ),
                     ),
                   );
                 }
