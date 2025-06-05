@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:lingo/AI_Tutor.dart';
-import 'package:lingo/AuthScreen.dart';
-import 'package:lingo/Lesson_Screen.dart';
-import 'package:lingo/Logout_Screen.dart';
-import 'package:lingo/Test_Screen.dart';
-import 'package:lingo/homescreen.dart';
-import 'package:lingo/profile.dart';
-import 'package:lingo/splashScreen.dart';
+import 'package:lingo/Authentication/AuthScreen.dart';
+import 'package:lingo/Authentication/Login.dart';
+import 'package:lingo/Authentication/Sign_in.dart';
+import 'package:lingo/Lessons/Lesson_Screen.dart';
+import 'package:lingo/Authentication/Logout_Screen.dart';
+import 'package:lingo/Test/PreTest_Screen.dart';
+import 'package:lingo/Report/Report_Screen.dart';
+import 'package:lingo/Test/Test_Screen.dart';
+import 'package:lingo/Home/homescreen.dart';
+import 'package:lingo/User/profile.dart';
+import 'package:lingo/Home/splashScreen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -26,12 +30,16 @@ class MyApp extends StatelessWidget {
         '/test': (context) => const TestScreen(),
         '/logout': (context) => Logout(),
         '/profile': (context) => ProfileScreen(),
+        '/report': (context) => ReportScreen(),
+        '/pretest': (context) => PretestScreen(),
+        '/login': (context) => Login(),
+        '/signin': (context) => SignIn(),
       },
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const HomeScreen(),
+      home: const Splashscreen(),
     );
   }
 }
