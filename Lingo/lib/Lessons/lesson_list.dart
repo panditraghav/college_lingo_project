@@ -108,7 +108,11 @@ class _LessonsListScreenState extends State<LessonsListScreen> {
                       MaterialPageRoute(
                         builder: (_) => LessonDetails(lesson: lesson),
                       ),
-                    );
+                    ).then((value) {
+                      if (value == true) {
+                        setState(() {});
+                      }
+                    });
                   },
                 ),
               );

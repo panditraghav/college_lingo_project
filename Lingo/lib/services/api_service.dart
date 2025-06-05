@@ -83,6 +83,7 @@ class ApiService {
 
   Future<Response> updateStatus(String lessonId) async {
     try {
+      logger.i("Update status id: $lessonId");
       final response = await _dio.post('/lessons/update/$lessonId');
       return response;
     } on DioException catch (e) {

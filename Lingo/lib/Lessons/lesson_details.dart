@@ -1,6 +1,6 @@
-//import 'dart:ffi';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:lingo/Lessons/lesson_list.dart';
 import 'package:lingo/models/lessons.dart';
 import 'package:lingo/services/api_service.dart';
 import 'package:pdf/pdf.dart';
@@ -40,8 +40,11 @@ class LessonDetails extends StatelessWidget {
   }
 
   Future<void> markLessonAsCompleted() async {
-    await Future.delayed(const Duration(seconds: 1));
-    _apiService.updateStatus(lesson.sId ?? " ");
+    try {
+      await _apiService.updateStatus(lesson.sId ?? " ");
+    } catch (e) {
+      print("Unable to mark as complete: $e");
+    }
     // print('$title marked as completed');
   }
 
@@ -129,7 +132,7 @@ class LessonDetails extends StatelessWidget {
               ),
               onPressed: () async {
                 await markLessonAsCompleted();
-                Navigator.pop(context);
+                Navigator.pop(context, true);
               },
               icon: const Icon(Icons.done),
               label: const Text('Done', style: TextStyle(fontSize: 16)),
