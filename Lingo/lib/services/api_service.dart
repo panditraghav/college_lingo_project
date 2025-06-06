@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:lingo/Models/ReportModel.dart';
+import 'package:lingo/models/ReportModel.dart';
 import 'package:lingo/models/lessons.dart';
 import 'package:lingo/models/test.dart';
 import 'package:logger/logger.dart';

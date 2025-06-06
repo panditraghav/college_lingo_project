@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:lingo/Models/ReportModel.dart';
+import 'package:lingo/models/ReportModel.dart';
 import 'package:lingo/Report/ResultScreen.dart';
 import 'package:lingo/services/api_service.dart';
 
