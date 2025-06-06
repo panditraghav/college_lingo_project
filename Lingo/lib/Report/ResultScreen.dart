@@ -105,14 +105,14 @@ class _ResultScreenState extends State<ResultScreen> {
                     },
                   ),
                 ),
-                // ElevatedButton(
-                //   onPressed: () => Navigator.pop(context),
-                //   style: ElevatedButton.styleFrom(
-                //     backgroundColor: Colors.cyanAccent,
-                //     foregroundColor: Colors.black,
-                //   ),
-                //   child: const Text("Back"),
-                // ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.cyanAccent,
+                    foregroundColor: Colors.black,
+                  ),
+                  child: const Text("Back to home"),
+                ),
               ],
             ),
           ),

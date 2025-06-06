@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lingo/Authentication/AuthScreen.dart';
 //import '../authscreen.dart';
 
@@ -12,6 +13,7 @@ class Logout extends StatefulWidget {
 class _LogoutState extends State<Logout> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _glowAnimation;
+  final _storage = FlutterSecureStorage();
 
   @override
   void initState() {
@@ -105,8 +107,10 @@ class _LogoutState extends State<Logout> with SingleTickerProviderStateMixin {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           TextButton.icon(
-                            onPressed:
-                                () => Navigator.pushNamed(context, '/home'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pop();
+                            },
                             icon: const Icon(Icons.cancel, color: Colors.grey),
                             label: const Text(
                               'Cancel',
@@ -128,7 +132,9 @@ class _LogoutState extends State<Logout> with SingleTickerProviderStateMixin {
                               shadowColor: Colors.red.shade900,
                               elevation: 10,
                             ),
-                            onPressed: () {
+                            onPressed: () async {
+                              await _storage.delete(key: 'token');
+
                               Navigator.of(context).pop(); // Close dialog
                               Navigator.of(context).pushAndRemoveUntil(
                                 MaterialPageRoute(
