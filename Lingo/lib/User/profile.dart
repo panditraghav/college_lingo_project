@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:lingo/Authentication/Logout_Screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:lingo/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -15,10 +16,11 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isEditing = false;
   bool _isLoading = false;
-
+  final _apiService = ApiService();
   final TextEditingController _dobController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
 
   String? _gender;
   DateTime? _selectedDate;
@@ -52,29 +54,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  //String _email = '';
   String? _profileImageUrl; // Add this at the top with your state variables
 
   Future<void> _fetchUserProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    print("Fetching!!!");
+    try {
+      final response = await _apiService.getUserProfile();
+      final data = response.data;
 
-    final response = await http.get(
-      Uri.parse('https://yourbackend.com/api/user/profile'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
+      final user = data['userDetails']; // 👈 Fix: access nested object
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
       setState(() {
-        _nameController.text = data['name'];
-        _phoneController.text = data['phone'];
-        _gender = data['gender'];
-        _dobController.text = data['dob'];
-        _selectedDate = DateFormat.yMMMMd().parse(data['dob']);
-        _profileImageUrl = data['profileImageUrl']; // <-- add this
+        _nameController.text = user['fullName'] ?? '';
+        _phoneController.text = user['phoneNumber'] ?? '';
+        _gender = user['gender'];
+        _emailController.text = user['email'] ?? '';
+        _dobController.text =
+            user['dateOfBirth'] != null
+                ? DateFormat.yMMMMd().format(
+                  DateTime.parse(user['dateOfBirth']),
+                )
+                : '';
+        _selectedDate =
+            user['dateOfBirth'] != null
+                ? DateTime.parse(user['dateOfBirth'])
+                : null;
+        _profileImageUrl = user['profilePhoto'];
+
+        print('Fetched profile data: $user');
       });
-    } else {
-      print('Failed to fetch user profile');
+    } catch (e) {
+      print('Failed to fetch user profile: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error fetching profile data')),
+      );
     }
   }
 
@@ -86,33 +100,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _updateUserProfile() async {
     setState(() => _isLoading = true);
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
 
-    final response = await http.put(
-      Uri.parse('https://yourbackend.com/api/user/profile'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({
-        'name': _nameController.text,
-        'phone': _phoneController.text,
-        'gender': _gender,
-        'dob': _dobController.text,
-      }),
-    );
-    setState(() => _isLoading = false);
-
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully')),
+    try {
+      final response = await _apiService.updateProfile(
+        data: {
+          'fullName': _nameController.text,
+          'phoneNumber': _phoneController.text,
+          'email': _emailController.text,
+          'gender': _gender,
+          'dateOfBirth': _selectedDate?.toIso8601String(),
+        },
       );
-      setState(() => _isEditing = false);
-    } else {
+
+      if (response.data['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile updated successfully')),
+        );
+        setState(() => _isEditing = false);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.data['message'] ?? 'Update failed')),
+        );
+      }
+    } catch (e) {
+      print('Update error: $e');
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Failed to update profile')));
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -179,23 +195,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Center(
               child: Stack(
                 children: [
-                  ShaderMask(
-                    shaderCallback:
-                        (bounds) => const LinearGradient(
-                          colors: [Colors.cyanAccent, Colors.purpleAccent],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ).createShader(bounds),
-                    blendMode: BlendMode.srcIn,
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundImage:
-                          _profileImageUrl != null
-                              ? NetworkImage(_profileImageUrl!)
-                              : const AssetImage('assets/images/lingoo2.png')
-                                  as ImageProvider,
-                    ),
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage:
+                        _profileImageUrl != null && _profileImageUrl!.isNotEmpty
+                            ? NetworkImage(_profileImageUrl!)
+                            : const AssetImage('assets/images/lingoo2.png')
+                                as ImageProvider,
                   ),
+
                   Positioned(
                     bottom: 0,
                     right: 0,
@@ -203,16 +211,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       decoration: const BoxDecoration(
                         color: Colors.cyanAccent,
                         shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.edit,
-                          color: Colors.black,
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          // Handle profile image change
-                        },
                       ),
                     ),
                   ),
@@ -229,6 +227,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               controller: _phoneController,
               keyboardType: TextInputType.phone,
             ),
+            const SizedBox(height: 16),
+            _buildTextField(label: 'Email', controller: _emailController),
             const SizedBox(height: 16),
             _buildGenderDropdown(),
           ],
@@ -316,12 +316,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
       items:
-          ['Male', 'Female', 'Other']
+          ['male', 'female', 'other']
               .map(
-                (gender) =>
-                    DropdownMenuItem(value: gender, child: Text(gender)),
+                (gender) => DropdownMenuItem(
+                  value: gender,
+                  child: Text(toBeginningOfSentenceCase(gender)!),
+                ),
               )
               .toList(),
+
       onChanged: (value) {
         _isEditing ? (value) => setState(() => _gender = value) : null;
         //setState(() => _gender = value);

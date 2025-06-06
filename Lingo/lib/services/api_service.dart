@@ -147,10 +147,20 @@ class ApiService {
 
   Future<Response> getUserProfile() async {
     try {
-      final response = await _dio.get('/profile');
+      final response = await _dio.get('/user/get');
       return response;
     } on DioException catch (e) {
       logger.e('Get profile error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Response> updateProfile({required Map<String, dynamic> data}) async {
+    try {
+      final response = await _dio.post('/user/profile/update', data: data);
+      return response;
+    } on DioException catch (e) {
+      logger.e('Unable to update: $e');
       rethrow;
     }
   }
