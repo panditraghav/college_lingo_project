@@ -76,7 +76,7 @@ class _TestScreenState extends State<TestScreen> {
                     MaterialPageRoute(
                       builder:
                           (_) => IndividualTest(
-                            testTitle: tests?.elementAt(index).title ?? "",
+                            testId: tests?.elementAt(index).id ?? "",
                           ),
                     ),
                   );
