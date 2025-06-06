@@ -122,7 +122,11 @@ class _TestScreenState extends State<TestScreen> {
                         MaterialPageRoute(
                           builder: (_) => IndividualTest(testId: test.id ?? ""),
                         ),
-                      );
+                      ).then((v) {
+                        if (v == true) {
+                          setState(() {});
+                        }
+                      });
                     }
                   },
                 ),
