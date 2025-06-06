@@ -1,6 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:logger/logger.dart';
+
+import 'package:lingo/services/api_service.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -14,43 +17,47 @@ class _LoginState extends State<Login> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool obscurePassword = true;
+  final ApiService _apiService = ApiService(); // Create an instance
+  final _storage = FlutterSecureStorage();
+  final logger = Logger(printer: PrettyPrinter());
 
   bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   Future<void> _submitLoginForm() async {
     if (_formKey.currentState!.validate()) {
       setState(() => isLoading = true);
 
-      final url = Uri.parse(
-        'https://your-api-endpoint.com/login',
-      ); // Replace with real endpoint
       try {
-        final response = await http.post(
-          url,
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'email': _emailController.text,
-            'password': _passwordController.text,
-          }),
+        final response = await _apiService.login(
+          _emailController.text,
+          _passwordController.text,
         );
+        logger.i("Login response data: !");
+        logger.i(response.data);
+        final token = response.data['token'];
+        logger.i("Token: $token");
 
-        if (response.statusCode == 200) {
-          // Handle success
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Login Successful')));
-          print("Successful");
-          Navigator.pushNamed(context, '/home');
-        } else {
-          // Handle error
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Login Failed: ${response.body}')),
-          );
+        if (token != null) {
+          await _storage.write(key: 'token', value: token);
         }
-      } catch (e) {
+
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(SnackBar(content: Text('Login Successful')));
+        logger.i("Successful");
+        Navigator.pushNamed(context, '/home');
+      } on DioException catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login Failed: ${e.response?.data['message']}'),
+          ),
+        );
+        logger.i(e);
       } finally {
         setState(() => isLoading = false);
       }

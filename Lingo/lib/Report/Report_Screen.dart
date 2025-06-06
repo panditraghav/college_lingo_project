@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:lingo/models/ReportModel.dart';
 import 'package:lingo/Report/ResultScreen.dart';
+import 'package:lingo/services/api_service.dart';
 
 class ReportScreen extends StatefulWidget {
-  const ReportScreen({super.key});
+  ReportScreen({super.key});
+  final _apiService = ApiService();
 
   @override
   State<ReportScreen> createState() => _ReportScreenState();
 }
 
 class _ReportScreenState extends State<ReportScreen> {
-  late Future<List<Map<String, dynamic>>> futureTestResults;
+  late Future<List<TestReports>> futureTestResults;
 
   @override
   void initState() {
@@ -17,28 +21,9 @@ class _ReportScreenState extends State<ReportScreen> {
     futureTestResults = fetchTestResultsFromBackend();
   }
 
-  // Mock backend call – replace this with real HTTP call
-  Future<List<Map<String, dynamic>>> fetchTestResultsFromBackend() async {
-    await Future.delayed(const Duration(seconds: 2)); // Simulate network delay
-
-    // This data should come from your backend
-    return [
-      {
-        'title': 'Noun Test',
-        'score': '8 / 10',
-        'details': 'Correct: 8\nWrong: 2',
-      },
-      {
-        'title': 'Pronoun Test',
-        'score': '7 / 10',
-        'details': 'Correct: 7\nWrong: 3',
-      },
-      {
-        'title': 'Adjective Test',
-        'score': '9 / 10',
-        'details': 'Correct: 9\nWrong: 1s',
-      },
-    ];
+  Future<List<TestReports>> fetchTestResultsFromBackend() async {
+    ReportModel reportModel = await widget._apiService.getReport();
+    return reportModel.testReports ?? [];
   }
 
   @override
@@ -53,7 +38,7 @@ class _ReportScreenState extends State<ReportScreen> {
         backgroundColor: const Color(0xFF1A1A1A),
         foregroundColor: Colors.white,
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
+      body: FutureBuilder<List<TestReports>>(
         future: futureTestResults,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -82,6 +67,10 @@ class _ReportScreenState extends State<ReportScreen> {
             itemCount: testResults.length,
             itemBuilder: (context, index) {
               final test = testResults[index];
+              final formattedDate = DateFormat(
+                'dd MMM yyyy, hh:mm a',
+              ).format(DateTime.parse(test.attemptedAt ?? '').toLocal());
+
               return Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12.0,
@@ -92,9 +81,13 @@ class _ReportScreenState extends State<ReportScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ResultScreen(testTitle: test['title']),
+                        builder: (_) => ResultScreen(testId: test.sId ?? ''),
                       ),
-                    );
+                    ).then((_) {
+                      setState(() {
+                        futureTestResults = fetchTestResultsFromBackend();
+                      });
+                    });
                   },
                   child: Container(
                     decoration: BoxDecoration(
@@ -115,7 +108,7 @@ class _ReportScreenState extends State<ReportScreen> {
                         collapsedIconColor: Colors.white70,
                         iconColor: Colors.white,
                         title: Text(
-                          test['title'],
+                          test.testTitle ?? '',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 18,
@@ -123,7 +116,7 @@ class _ReportScreenState extends State<ReportScreen> {
                           ),
                         ),
                         subtitle: Text(
-                          'Score: ${test['score']}',
+                          'Score: ${test.score ?? 0}',
                           style: const TextStyle(color: Colors.white70),
                         ),
                         children: [
@@ -137,7 +130,7 @@ class _ReportScreenState extends State<ReportScreen> {
                               ),
                             ),
                             child: Text(
-                              test['details'],
+                              'Attempted At: $formattedDate',
                               style: const TextStyle(
                                 color: Colors.white70,
                                 fontSize: 14,

@@ -1,5 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'dart:async';
 
 import 'package:lingo/Authentication/AuthScreen.dart';
@@ -17,6 +19,7 @@ class _SplashscreenState extends State<Splashscreen>
   double _opacity = 0.0;
   double _scale = 1.0;
   late AnimationController _controller;
+  final _storage = FlutterSecureStorage();
 
   @override
   void initState() {
@@ -38,11 +41,35 @@ class _SplashscreenState extends State<Splashscreen>
     });
 
     // Navigate to next screen after delay
-    Timer(const Duration(seconds: 4), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Authscreen()),
-      );
+    Timer(const Duration(seconds: 4), () async {
+      final token = await _storage.read(key: 'token');
+
+      if (!mounted) return;
+      if (token == null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Authscreen()),
+        );
+      } else {
+        try {
+          if (JwtDecoder.isExpired(token)) {
+            await _storage.delete(key: 'token');
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const Authscreen()),
+            );
+          } else {
+            Navigator.pushReplacementNamed(context, '/home');
+          }
+        } catch (e) {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const Authscreen()),
+          );
+        }
+      }
     });
   }
 

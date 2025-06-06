@@ -1,163 +1,147 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
 import 'package:lingo/Report/ResultScreen.dart';
+import 'package:lingo/models/test.dart';
+import 'package:lingo/services/api_service.dart';
+import 'package:logger/logger.dart';
 
 class IndividualTest extends StatefulWidget {
-  final String testTitle;
+  final String testId;
 
-  const IndividualTest({super.key, required this.testTitle});
+  const IndividualTest({super.key, required this.testId});
 
   @override
   _IndividualTestState createState() => _IndividualTestState();
 }
 
 class _IndividualTestState extends State<IndividualTest> {
-  int currentIndex = 0;
-  int? selectedOption;
-  List<int?> answers = [];
+  final logger = Logger();
+  final _apiService = ApiService();
+
+  int currentQuestionIndex = 0;
+  String currentQuestionId = "";
   bool isLoading = true;
+  bool isError = false;
+  TestModel? test;
+  Map<String, int?> answers = {}; // Map<QuestionId, optionIndex>
 
-  List<Map<String, dynamic>> questions = [];
-
-  @override
   @override
   void initState() {
     super.initState();
-    _fetchQuestionsFromBackend();
+    _fetchTest();
   }
 
-  Future<void> _fetchQuestionsFromBackend() async {
+  Future _fetchTest() async {
     try {
-      final response = await http.get(
-        Uri.parse(
-          'https://your-api-endpoint.com/questions?test=${Uri.encodeComponent(widget.testTitle)}',
-        ),
-      );
-
-      if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
-        if (data.isNotEmpty) {
-          questions =
-              data.map<Map<String, dynamic>>((q) {
-                return {
-                  'question': q['question'],
-                  'options': List<String>.from(q['options']),
-                };
-              }).toList();
-          answers = List.filled(questions.length, null);
-        } else {
-          _useMockData();
-        }
-      } else {
-        _useMockData();
-      }
-    } catch (e) {
-      debugPrint('Failed to fetch questions: $e');
-      _useMockData();
-    } finally {
-      setState(() => isLoading = false);
-    }
-  }
-
-  void _useMockData() {
-    questions = [
-      {
-        'question': 'Which of these is a noun?',
-        'options': ['Quickly', 'Beautiful', 'Apple', 'Run'],
-      },
-      {
-        'question': 'Identify the pronoun:',
-        'options': ['She', 'Happy', 'Green', 'Play'],
-      },
-      {
-        'question': 'Select the adjective:',
-        'options': ['Cat', 'Fast', 'Jump', 'Him'],
-      },
-    ];
-    answers = List.filled(questions.length, null);
-  }
-
-  void _nextQuestion() async {
-    if (selectedOption != null) {
-      answers[currentIndex] = selectedOption;
-
-      if (currentIndex < questions.length - 1) {
-        setState(() {
-          currentIndex++;
-          selectedOption = answers[currentIndex];
-        });
-      } else {
-        // POST answers
-        try {
-          final response = await http.post(
-            Uri.parse('https://your-api-endpoint.com/submit-answers'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'test': widget.testTitle, 'answers': answers}),
-          );
-
-          if (response.statusCode == 200) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ResultScreen(testTitle: widget.testTitle),
-              ),
-            );
-          } else {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Submission failed')));
+      final t = await _apiService.getSingleTest(widget.testId);
+      setState(() {
+        test = t;
+        test?.questions?.forEach((question) {
+          final id = question.sId;
+          if (id != null) {
+            answers[id] = null;
           }
-        } catch (e) {
-          debugPrint('Submission error: $e');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Error submitting answers')),
-          );
-        }
-      }
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please select an option')));
+        });
+
+        currentQuestionId = test?.questions?[currentQuestionIndex].sId ?? "";
+
+        isLoading = false;
+      });
+    } catch (e) {
+      logger.e(e);
+      setState(() {
+        isError = true;
+      });
     }
   }
 
   void _prevQuestion() {
-    if (currentIndex > 0) {
+    if (currentQuestionIndex > 0) {
       setState(() {
-        currentIndex--;
-        selectedOption = answers[currentIndex];
+        currentQuestionIndex--;
+        currentQuestionId = test?.questions?[currentQuestionIndex].sId ?? "";
       });
+    }
+  }
+
+  void _nextQuestion() {
+    if (answers[currentQuestionId] == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Please select an option!!")));
+      return;
+    }
+    if (currentQuestionIndex < test!.questions!.length - 1) {
+      setState(() {
+        currentQuestionIndex++;
+        currentQuestionId = test?.questions?[currentQuestionIndex].sId ?? "";
+      });
+    }
+  }
+
+  Future _submitTest() async {
+    if (answers[currentQuestionId] == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Please select an option!!")));
+      return;
+    }
+
+    List<Answer> ans = [];
+    test?.questions?.forEach((question) {
+      final ansOptionIndex = answers[question.sId] ?? 0;
+      final Answer ansForThisQuestion = Answer(
+        questionId: question.sId,
+        selectedAnswer: question.options?[ansOptionIndex],
+      );
+      ans.add(ansForThisQuestion);
+    });
+    try {
+      await _apiService.submitTest(widget.testId, ans);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Test submitted successfully!")));
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (BuildContext context) {
+            return ResultScreen(testId: widget.testId);
+          },
+        ),
+      );
+    } catch (e) {
+      logger.e(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Some error occured while submitting")),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isLastQuestion = currentIndex == questions.length - 1;
+    final questions = test?.questions;
+    final bool isLastQuestion =
+        currentQuestionIndex == (questions?.length ?? 0) - 1;
 
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: Text(
-          widget.testTitle,
+          test?.title ?? "",
           style: const TextStyle(color: Colors.cyanAccent),
         ),
         centerTitle: true,
       ),
       body:
           isLoading
-              ? const Center(
-                child: CircularProgressIndicator(color: Colors.cyanAccent),
-              )
+              ? Center(child: CircularProgressIndicator())
               : Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Q${currentIndex + 1}: ${questions[currentIndex]['question']}',
+                      'Q${currentQuestionIndex + 1}: ${questions?[currentQuestionIndex].questionText ?? ""}',
                       style: const TextStyle(
                         color: Colors.cyanAccent,
                         fontSize: 20,
@@ -165,22 +149,30 @@ class _IndividualTestState extends State<IndividualTest> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    ...List.generate(4, (index) {
-                      return RadioListTile<int>(
-                        activeColor: Colors.cyanAccent,
-                        title: Text(
-                          questions[currentIndex]['options'][index],
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                        value: index,
-                        groupValue: selectedOption,
-                        onChanged: (value) {
-                          setState(() {
-                            selectedOption = value;
-                          });
-                        },
-                      );
-                    }),
+                    ...List.generate(
+                      questions?[currentQuestionIndex].options?.length ?? 4,
+                      (index) {
+                        final currentQuestion =
+                            questions?[currentQuestionIndex];
+                        return RadioListTile<int>(
+                          activeColor: Colors.cyanAccent,
+                          title: Text(
+                            currentQuestion?.options?[index] ?? "",
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          value: index,
+                          groupValue: answers[currentQuestion?.sId],
+                          onChanged: (value) {
+                            setState(() {
+                              final id = currentQuestion?.sId!;
+                              if (id != null) {
+                                answers[id] = value;
+                              }
+                            });
+                          },
+                        );
+                      },
+                    ),
                     const Spacer(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -194,7 +186,8 @@ class _IndividualTestState extends State<IndividualTest> {
                           child: const Text('Previous'),
                         ),
                         ElevatedButton(
-                          onPressed: _nextQuestion,
+                          onPressed:
+                              isLastQuestion ? _submitTest : _nextQuestion,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.cyanAccent,
                             foregroundColor: Colors.black,

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lingo/AI_Tutor.dart';
-import 'package:lingo/Authentication/AuthScreen.dart';
 import 'package:lingo/Authentication/Login.dart';
 import 'package:lingo/Authentication/Sign_in.dart';
-import 'package:lingo/Lessons/Lesson_Screen.dart';
+import 'package:lingo/Lessons/lesson_screen.dart';
 import 'package:lingo/Authentication/Logout_Screen.dart';
 import 'package:lingo/Test/PreTest_Screen.dart';
 import 'package:lingo/Report/Report_Screen.dart';
@@ -12,8 +12,9 @@ import 'package:lingo/Home/homescreen.dart';
 import 'package:lingo/User/profile.dart';
 import 'package:lingo/Home/splashScreen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/home': (context) => const HomeScreen(),
         '/ai_tutor': (context) => const AITutorScreen(),
-        '/lesson': (context) => const LessonOverviewScreen(),
+        '/lesson': (context) => LessonOverviewScreen(),
         '/test': (context) => const TestScreen(),
         '/logout': (context) => Logout(),
         '/profile': (context) => ProfileScreen(),

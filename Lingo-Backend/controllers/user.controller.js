@@ -42,7 +42,7 @@ export const register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10); // const and let have scope limited to the block whereas var has global scope. 
 
         try {
-            await User.create({
+            const user = await User.create({
                 fullName,
                 email,
                 phoneNumber,
@@ -52,6 +52,17 @@ export const register = async (req, res) => {
                 dateOfBirth,
                 profilePhoto: profilePhotoUrl,
             });
+            const tokenData = {
+                fullName: user.fullName,
+                email: user.email,
+                userID: user._id
+            }
+            const token = jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: '1d' });
+            return res.status(200).json({
+                message: "Account created successfully!",
+                token,
+                success: true
+            })
         } catch (dbErr) {
             console.error("User DB creation failed:", dbErr);
             return res.status(500).json({
@@ -109,9 +120,11 @@ export const login = async (req, res) => {
         }
 
         const tokenData = {
+            fullName: user.fullName,
+            email: user.email,
             userID: user._id
         }
-        const token = await jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: '1d' });
+        const token = jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: '1d' });
         user = {
             _id: user._id,
             fullName: user.fullName,
@@ -123,6 +136,7 @@ export const login = async (req, res) => {
         return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpsOnly: true, sameSit: 'strict' }).json({
             message: `Welcome back ${user.fullName}`,
             user,
+            token,
             success: true
         })
 

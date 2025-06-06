@@ -52,21 +52,7 @@ class _AuthscreenState extends State<Authscreen> {
               ),
             ),
 
-            const SizedBox(height: 12),
-
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/signin');
-                // TODO: Navigate to sign-in screen
-              },
-              child: const Text(
-                'Already have an account? Sign In',
-                style: TextStyle(color: Colors.white70, fontSize: 16),
-              ),
-            ),
-
             const SizedBox(height: 18),
-
             const Text(
               'OR',
               style: TextStyle(color: Colors.white38, fontSize: 20),
@@ -75,28 +61,18 @@ class _AuthscreenState extends State<Authscreen> {
             const SizedBox(height: 18),
 
             // Google Sign-In Button with dark theme
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black87,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-              ),
-              icon: Image.asset('assets/images/google.png', height: 20),
-              label: const Text(
-                'Continue with Google',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
+            TextButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/home');
-                // TODO: Implement Google Sign-In
+                Navigator.pushNamed(context, '/signin');
+                // TODO: Navigate to sign-in screen
               },
+              child: const Text(
+                'New User Registration ',
+                style: TextStyle(color: Colors.white70, fontSize: 18),
+              ),
             ),
+
+            const SizedBox(height: 18),
           ],
         ),
       ),
