@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lingo/Models/ReportModel.dart';
 import 'package:lingo/models/lessons.dart';
 import 'package:lingo/models/test.dart';
 import 'package:logger/logger.dart';
@@ -89,6 +90,17 @@ class ApiService {
       return response;
     } on DioException catch (e) {
       logger.e('Unable to update : $e');
+      rethrow;
+    }
+  }
+
+  Future<ReportModel> getReport() async {
+    try {
+      final response = await _dio.get('/test/getreport/');
+      final model = ReportModel.fromJson(response.data);
+      return model;
+    } on DioException catch (e) {
+      logger.e("Unable to get report");
       rethrow;
     }
   }
