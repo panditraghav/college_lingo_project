@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:lingo/Test/Individual_Test.dart';
-import 'dart:convert';
+import 'package:lingo/services/api_service.dart';
+import 'package:logger/logger.dart';
 import '../Home/Appdrawer.dart';
 
 class TestScreen extends StatefulWidget {
@@ -12,36 +12,12 @@ class TestScreen extends StatefulWidget {
 }
 
 class _TestScreenState extends State<TestScreen> {
-  List<String> testTitles = [];
-  bool isLoading = true;
+  final _apiService = ApiService();
+  final logger = Logger();
 
   @override
   void initState() {
     super.initState();
-    _fetchTests();
-  }
-
-  Future<void> _fetchTests() async {
-    try {
-      final response = await http.get(
-        Uri.parse('https://your-api-endpoint.com/tests'),
-      );
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        setState(() {
-          testTitles = List<String>.from(data.map((e) => e['title']));
-          isLoading = false;
-        });
-      } else {
-        throw Exception("Failed to load tests");
-      }
-    } catch (e) {
-      debugPrint("Error fetching tests: $e");
-      setState(() {
-        isLoading = false;
-        testTitles = ["Noun", "Pronoun", "Adjective", "Verb"]; // Fallback
-      });
-    }
   }
 
   @override
@@ -64,30 +40,52 @@ class _TestScreenState extends State<TestScreen> {
         ),
       ),
       drawer: const AppDrawer(),
-      body:
-          isLoading
-              ? const Center(
-                child: CircularProgressIndicator(color: Colors.cyanAccent),
-              )
-              : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: testTitles.length,
-                itemBuilder: (context, index) {
-                  return TestTile(
-                    title: testTitles[index],
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (_) =>
-                                  IndividualTest(testTitle: testTitles[index]),
-                        ),
-                      );
-                    },
+      body: FutureBuilder(
+        future: _apiService.getTestsWithStatus(),
+        builder: (context, asyncSnapshot) {
+          final data = asyncSnapshot.data;
+          final tests = data?.tests;
+          if (!asyncSnapshot.hasData) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (asyncSnapshot.hasError) {
+            return Center(
+              child: Text(
+                "Unable to get tests",
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            );
+          }
+          if (!(data?.success ?? false)) {
+            return Center(
+              child: Text(
+                "Unable to get tests",
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            );
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: tests?.length ?? 0,
+            itemBuilder: (context, index) {
+              return TestTile(
+                title: tests?.elementAt(index).title ?? "",
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => IndividualTest(
+                            testId: tests?.elementAt(index).id ?? "",
+                          ),
+                    ),
                   );
                 },
-              ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

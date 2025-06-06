@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lingo/models/lessons.dart';
+import 'package:lingo/models/test.dart';
 import 'package:logger/logger.dart';
 
 class ApiService {
@@ -98,6 +99,46 @@ class ApiService {
       return response;
     } on DioException catch (e) {
       logger.e('Get profile error: $e');
+      rethrow;
+    }
+  }
+
+  Future<TestsWithStatus> getTestsWithStatus() async {
+    try {
+      final response = await _dio.get('/test/get');
+      return TestsWithStatus.fromJson(response.data);
+    } on DioException catch (e) {
+      logger.e('Get profile error: $e');
+      rethrow;
+    }
+  }
+
+  Future<TestModel> getSingleTest(String testId) async {
+    try {
+      final response = await _dio.get('/test/getsingletest/$testId');
+      return TestModel.fromJson(response.data['requiredTest']);
+    } on DioException catch (e) {
+      logger.e('Get single test error: $e');
+      rethrow;
+    }
+  }
+
+  Future submitTest(String testId, List<Answer> answers) async {
+    try {
+      Map<String, dynamic> data = {};
+      data['testId'] = testId;
+
+      final ansList =
+          answers.map((answer) {
+            return answer.toJson();
+          }).toList();
+      data['answers'] = ansList;
+
+      final response = await _dio.post('/test/submit/', data: data);
+      logger.i("submitTest");
+      logger.i(response);
+    } on DioException catch (e) {
+      logger.e('submitTest error: $e');
       rethrow;
     }
   }
