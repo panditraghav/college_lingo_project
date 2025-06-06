@@ -2,7 +2,7 @@ class TestModel {
   String? sId;
   String? title;
   String? description;
-  List<Questions>? questions;
+  List<Question>? questions;
   int? iV;
 
   TestModel({this.sId, this.title, this.description, this.questions, this.iV});
@@ -12,9 +12,9 @@ class TestModel {
     title = json['title'];
     description = json['description'];
     if (json['questions'] != null) {
-      questions = <Questions>[];
+      questions = <Question>[];
       json['questions'].forEach((v) {
-        questions!.add(Questions.fromJson(v));
+        questions!.add(Question.fromJson(v));
       });
     }
     iV = json['__v'];
@@ -33,15 +33,15 @@ class TestModel {
   }
 }
 
-class Questions {
+class Question {
   String? questionText;
   List<String>? options;
   String? correctAnswer;
   String? sId;
 
-  Questions({this.questionText, this.options, this.correctAnswer, this.sId});
+  Question({this.questionText, this.options, this.correctAnswer, this.sId});
 
-  Questions.fromJson(Map<String, dynamic> json) {
+  Question.fromJson(Map<String, dynamic> json) {
     questionText = json['questionText'];
     options = json['options'].cast<String>();
     correctAnswer = json['correctAnswer'];
@@ -124,5 +124,84 @@ class TestWithStatus {
     json['description'] = description;
     json['attempted'] = attempted;
     return json;
+  }
+}
+
+class TestResult {
+  String? testTitle;
+  int? score;
+  String? attemptedAt;
+  int? totalQuestions;
+  int? correctAnswers;
+  List<QuestionWithSelectedAnswer>? questions;
+
+  TestResult({
+    this.testTitle,
+    this.score,
+    this.attemptedAt,
+    this.totalQuestions,
+    this.correctAnswers,
+    this.questions,
+  });
+
+  TestResult.fromJson(Map<String, dynamic> json) {
+    testTitle = json['testTitle'];
+    score = json['score'];
+    attemptedAt = json['attemptedAt'];
+    totalQuestions = json['totalQuestions'];
+    correctAnswers = json['correctAnswers'];
+    if (json['questions'] != null) {
+      questions = <QuestionWithSelectedAnswer>[];
+      json['questions'].forEach((v) {
+        questions!.add(QuestionWithSelectedAnswer.fromJson(v));
+      });
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {};
+    data['testTitle'] = testTitle;
+    data['score'] = score;
+    data['attemptedAt'] = attemptedAt;
+    data['totalQuestions'] = totalQuestions;
+    data['correctAnswers'] = correctAnswers;
+    if (questions != null) {
+      data['questions'] = questions!.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
+
+class QuestionWithSelectedAnswer {
+  String? questionText;
+  List<String>? options;
+  String? correctAnswer;
+  String? selectedAnswer;
+  bool? isCorrect;
+
+  QuestionWithSelectedAnswer({
+    this.questionText,
+    this.options,
+    this.correctAnswer,
+    this.selectedAnswer,
+    this.isCorrect,
+  });
+
+  QuestionWithSelectedAnswer.fromJson(Map<String, dynamic> json) {
+    questionText = json['questionText'];
+    options = json['options'].cast<String>();
+    correctAnswer = json['correctAnswer'];
+    selectedAnswer = json['selectedAnswer'];
+    isCorrect = json['isCorrect'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {};
+    data['questionText'] = questionText;
+    data['options'] = options;
+    data['correctAnswer'] = correctAnswer;
+    data['selectedAnswer'] = selectedAnswer;
+    data['isCorrect'] = isCorrect;
+    return data;
   }
 }

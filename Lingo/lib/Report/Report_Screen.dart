@@ -81,9 +81,7 @@ class _ReportScreenState extends State<ReportScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:
-                            (_) =>
-                                ResultScreen(testTitle: test.testTitle ?? ''),
+                        builder: (_) => ResultScreen(testId: test.sId ?? ''),
                       ),
                     ).then((_) {
                       setState(() {
