@@ -16,101 +16,120 @@ class _TestScreenState extends State<TestScreen> {
   final logger = Logger();
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A1A),
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A1A),
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           'Test',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        leading: Builder(
-          builder:
-              (context) => IconButton(
-                icon: const Icon(Icons.menu, color: Colors.white),
-                onPressed: () => Scaffold.of(context).openDrawer(),
-              ),
-        ),
       ),
       drawer: const AppDrawer(),
       body: FutureBuilder(
         future: _apiService.getTestsWithStatus(),
         builder: (context, asyncSnapshot) {
-          final data = asyncSnapshot.data;
-          final tests = data?.tests;
-          if (!asyncSnapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
+          if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
           }
-          if (asyncSnapshot.hasError) {
-            return Center(
+
+          if (asyncSnapshot.hasError ||
+              !(asyncSnapshot.data?.success ?? false)) {
+            return const Center(
               child: Text(
                 "Unable to get tests",
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ),
             );
           }
-          if (!(data?.success ?? false)) {
-            return Center(
-              child: Text(
-                "Unable to get tests",
-                style: TextStyle(color: Colors.white, fontSize: 18),
-              ),
-            );
-          }
+
+          final tests = asyncSnapshot.data?.tests;
+
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: tests?.length ?? 0,
             itemBuilder: (context, index) {
-              return TestTile(
-                title: tests?.elementAt(index).title ?? "",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => IndividualTest(
-                            testId: tests?.elementAt(index).id ?? "",
+              final test = tests![index];
+              final attempted = test.attempted == true;
+
+              return Card(
+                color: Colors.grey[900],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                margin: const EdgeInsets.only(bottom: 16),
+                elevation: 4,
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(16),
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          test.title ?? "",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.cyanAccent,
                           ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: attempted ? Colors.green : Colors.orange,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          attempted ? "Completed" : "Pending",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      "This is your test: ${test.title ?? ""}",
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.white70,
+                      ),
                     ),
-                  );
-                },
+                  ),
+                  onTap: () {
+                    if (attempted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("You have already completed the test!"),
+                          backgroundColor: Colors.green,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => IndividualTest(testId: test.id ?? ""),
+                        ),
+                      );
+                    }
+                  },
+                ),
               );
             },
           );
         },
-      ),
-    );
-  }
-}
-
-class TestTile extends StatelessWidget {
-  final String title;
-  final VoidCallback onTap;
-
-  const TestTile({super.key, required this.title, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 3,
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: const Icon(Icons.quiz, size: 32, color: Colors.black87),
-        title: Text(
-          title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        trailing: const Icon(Icons.arrow_forward_ios),
-        onTap: onTap,
       ),
     );
   }
