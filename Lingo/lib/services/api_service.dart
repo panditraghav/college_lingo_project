@@ -100,7 +100,7 @@ class ApiService {
       final model = ReportModel.fromJson(response.data);
       return model;
     } on DioException catch (e) {
-      logger.e("Unable to get report");
+      logger.e("getReport error: $e");
       rethrow;
     }
   }
@@ -146,11 +146,19 @@ class ApiService {
           }).toList();
       data['answers'] = ansList;
 
-      final response = await _dio.post('/test/submit/', data: data);
-      logger.i("submitTest");
-      logger.i(response);
+      await _dio.post('/test/submit/', data: data);
     } on DioException catch (e) {
       logger.e('submitTest error: $e');
+      rethrow;
+    }
+  }
+
+  Future<TestResult> getTestResult(String testId) async {
+    try {
+      final response = await _dio.get('/test/gettestresult/$testId');
+      return TestResult.fromJson(response.data['testResult']);
+    } on DioException catch (e) {
+      logger.e('getTestResult error: $e');
       rethrow;
     }
   }

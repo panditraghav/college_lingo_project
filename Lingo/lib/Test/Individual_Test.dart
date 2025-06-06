@@ -101,10 +101,13 @@ class _IndividualTestState extends State<IndividualTest> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Test submitted successfully!")));
-      Navigator.of(context).pop();
-      // Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (BuildContext context) {
-      //   // return ResultScreen(testTitle: testTitle);
-      // }));
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (BuildContext context) {
+            return ResultScreen(testId: widget.testId);
+          },
+        ),
+      );
     } catch (e) {
       logger.e(e);
       ScaffoldMessenger.of(context).showSnackBar(
