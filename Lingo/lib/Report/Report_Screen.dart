@@ -1,8 +1,10 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lingo/models/ReportModel.dart';
 import 'package:lingo/Report/ResultScreen.dart';
 import 'package:lingo/services/api_service.dart';
+import 'package:logger/logger.dart';
 
 class ReportScreen extends StatefulWidget {
   ReportScreen({super.key});
@@ -14,6 +16,7 @@ class ReportScreen extends StatefulWidget {
 
 class _ReportScreenState extends State<ReportScreen> {
   late Future<List<TestReports>> futureTestResults;
+  final _logger = Logger();
 
   @override
   void initState() {
@@ -46,6 +49,17 @@ class _ReportScreenState extends State<ReportScreen> {
               child: CircularProgressIndicator(color: Colors.cyanAccent),
             );
           } else if (snapshot.hasError) {
+            final error = snapshot.error;
+            if (error is DioException) {
+              if (error.response?.statusCode == 404) {
+                return const Center(
+                  child: Text(
+                    "No test attempted",
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                );
+              }
+            }
             return const Center(
               child: Text(
                 "Failed to load data",
