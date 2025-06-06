@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:lingo/services/api_service.dart';
 import 'Appdrawer.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -11,10 +12,37 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int progress = 0;
+  int completed = 0;
+  int totalLessons = 0;
+  bool isLoadingProgress = true;
+
+  final _apiServices = ApiService();
   @override
   void initState() {
     super.initState();
     requestAllPermissions(); // Request permissions on screen load
+    fetchProgress();
+  }
+
+  Future<void> fetchProgress() async {
+    try {
+      final res = await _apiServices.getProgress();
+      if (res.statusCode == 200) {
+        final data = res.data;
+        setState(() {
+          progress = data['progress'] ?? 0;
+          completed = data['completed'] ?? 0;
+          totalLessons = data['totalLessons'] ?? 0;
+          isLoadingProgress = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching progress: $e');
+      setState(() {
+        isLoadingProgress = false;
+      });
+    }
   }
 
   Future<void> requestAllPermissions() async {
@@ -116,54 +144,58 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                     const SizedBox(height: 30),
-                    GestureDetector(
-                      onTap: () => Navigator.pushNamed(context, '/progress'),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 20,
-                          horizontal: 20,
+                    isLoadingProgress
+                        ? const Center(child: CircularProgressIndicator())
+                        : GestureDetector(
+                          onTap:
+                              () => Navigator.pushNamed(context, '/progress'),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 20,
+                              horizontal: 20,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[900],
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.greenAccent,
+                                  blurRadius: 6,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Your Learning Progress",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                LinearProgressIndicator(
+                                  value: progress / 100,
+                                  backgroundColor: Colors.white24,
+                                  color: Colors.greenAccent,
+                                  minHeight: 8,
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  "$progress% completed •",
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[900],
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.greenAccent,
-                              blurRadius: 6,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              "Your Learning Progress",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 10),
-                            LinearProgressIndicator(
-                              value: 0.65,
-                              backgroundColor: Colors.white24,
-                              color: Colors.greenAccent,
-                              minHeight: 8,
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              "65% completed",
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+
                     const SizedBox(height: 30),
                   ],
                 ),

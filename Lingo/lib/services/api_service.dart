@@ -94,6 +94,16 @@ class ApiService {
     }
   }
 
+  Future<Response> getProgress() async {
+    try {
+      final response = await _dio.get('/user/progress');
+      return response;
+    } on DioException catch (e) {
+      logger.e('Unable to fetch the progress : $e');
+      rethrow;
+    }
+  }
+
   Future<ReportModel> getReport() async {
     try {
       final response = await _dio.get('/test/getreport/');
