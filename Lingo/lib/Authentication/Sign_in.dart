@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:lingo/services/api_service.dart';
+import 'package:logger/logger.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -12,6 +15,9 @@ class SignIn extends StatefulWidget {
 
 class _SignInState extends State<SignIn> {
   final _formKey = GlobalKey<FormState>();
+  final _apiService = ApiService();
+  final logger = Logger();
+  final _storage = FlutterSecureStorage();
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
@@ -35,18 +41,59 @@ class _SignInState extends State<SignIn> {
     }
   }
 
-  void _submit() {
+  Future _submit() async {
+    if (_profileImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please select a profile image!"),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
     if (_formKey.currentState!.validate()) {
       // Pass this data to your backend
-      _formKey.currentState!.save();
-      print("Name: ${_nameController.text}");
-      print("Email: ${_emailController.text}");
-      print("Phone: ${_phoneController.text}");
-      print("Age: ${_ageController.text}");
-      print("Gender: $_gender");
-      print("DOB: ${_dobController.text}");
-      print("Password: ${_passwordController.text}");
-      Navigator.pushNamed(context, '/home');
+      try {
+        final response = await _apiService.signup(
+          email: _emailController.text,
+          password: _passwordController.text,
+          fullName: _nameController.text,
+          age: _ageController.text,
+          dateOfBirth: _dobController.text,
+          gender: _gender,
+          phoneNumber: _phoneController.text,
+          file: _profileImage!,
+        );
+        logger.i(response.data);
+
+        final token = response.data['token'];
+        logger.i("Token: $token");
+
+        if (token != null) {
+          await _storage.write(key: 'token', value: token);
+        }
+
+        _formKey.currentState!.save();
+        logger.i("Name: ${_nameController.text}");
+        logger.i("Email: ${_emailController.text}");
+        logger.i("Phone: ${_phoneController.text}");
+        logger.i("Age: ${_ageController.text}");
+        logger.i("Gender: $_gender");
+        logger.i("DOB: ${_dobController.text}");
+        logger.i("Password: ${_passwordController.text}");
+
+        Navigator.pushNamed(context, '/home');
+      } catch (e) {
+        logger.e(e);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Some error occured!"),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -122,7 +169,7 @@ class _SignInState extends State<SignIn> {
                   foregroundColor: Colors.black,
                 ),
                 onPressed: _submit,
-                child: const Text('Submit'),
+                child: const Text('Sign Up'),
               ),
             ],
           ),

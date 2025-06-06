@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -32,7 +34,6 @@ class ApiService {
 
   Dio get dio => _dio; // Getter to access the Dio instance
 
-  // Example API calls
   Future<Response> login(String email, String password) async {
     try {
       final response = await _dio.post(
@@ -43,6 +44,35 @@ class ApiService {
     } on DioException catch (e) {
       // Handle Dio errors (e.g., network issues, server errors)
       logger.e('Login error: $e');
+      rethrow;
+    }
+  }
+
+  Future<Response> signup({
+    required String email,
+    required String password,
+    required String fullName,
+    required String age,
+    required String dateOfBirth,
+    required String gender,
+    required String phoneNumber,
+    required File file,
+  }) async {
+    try {
+      FormData data = FormData.fromMap({
+        "email": email,
+        "password": password,
+        "fullName": fullName,
+        "age": age,
+        "dateOfBirth": dateOfBirth,
+        "gender": gender,
+        "phoneNumber": phoneNumber,
+        "file": MultipartFile.fromFile(file.path),
+      });
+      final response = await _dio.post('/user/register', data: data);
+      return response;
+    } on DioException catch (e) {
+      logger.e('Signup error: $e');
       rethrow;
     }
   }
