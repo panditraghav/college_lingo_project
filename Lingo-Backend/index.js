@@ -7,7 +7,6 @@ import chatRoutes from "./routes/chat.route.js";
 import lessonRoutes from "./routes/lesson.route.js";
 import testRoutes from "./routes/test.route.js";
 import morgan from "morgan";
-import { register } from "./controllers/user.controller.js";
 
 dotenv.config({});
 const app = express();
