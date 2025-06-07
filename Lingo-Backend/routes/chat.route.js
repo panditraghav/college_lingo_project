@@ -8,9 +8,9 @@ import {
 
 const router = express.Router();
 
-router.route("/").get(getAllChat);
-router.route("/new").get(createChat);
-router.route("/:id").get(getChat);
-router.route("/:id").put(updateChat);
+router.route("/new/:userId").get(createChat);
+router.route("/update/:chatId").put(updateChat);
+router.route("/from-user/:userId").get(getAllChat);
+router.route("single/:id").get(getChat);
 
 export default router;

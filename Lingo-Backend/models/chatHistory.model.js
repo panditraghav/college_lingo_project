@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const chatHistorySchema = new mongoose.Schema(
   {
+    userId: String,
     chat: [
       {
         role: String,
