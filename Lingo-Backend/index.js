@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan("combined"));
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // API's :
 
