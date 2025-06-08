@@ -206,6 +206,10 @@ class _AITutorScreenState extends State<AITutorScreen>
                             onTap: () async {
                               try {
                                 await _audioPlayer.setUrl(audioUrl);
+                                if (_audioPlayer.playing) {
+                                  await _audioPlayer.pause();
+                                  return;
+                                }
                                 await _audioPlayer.play();
                               } catch (e) {
                                 ScaffoldMessenger.of(context).showSnackBar(
