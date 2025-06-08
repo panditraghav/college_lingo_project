@@ -1,37 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lingo/AI_Tutor.dart';
-import 'package:lingo/AuthScreen.dart';
-import 'package:lingo/Lesson_Screen.dart';
-import 'package:lingo/Logout_Screen.dart';
-import 'package:lingo/Test_Screen.dart';
-import 'package:lingo/homescreen.dart';
-import 'package:lingo/profile.dart';
-import 'package:lingo/splashScreen.dart';
+import 'package:lingo/Authentication/Login.dart';
+import 'package:lingo/Authentication/Sign_in.dart';
+import 'package:lingo/Lessons/lesson_screen.dart';
+import 'package:lingo/Authentication/Logout_Screen.dart';
+import 'package:lingo/Test/PreTest_Screen.dart';
+import 'package:lingo/Report/Report_Screen.dart';
+import 'package:lingo/Test/Test_Screen.dart';
+import 'package:lingo/Home/homescreen.dart';
+import 'package:lingo/User/profile.dart';
+import 'package:lingo/Home/splashScreen.dart';
+import 'package:lingo/chat_history_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       routes: {
         '/home': (context) => const HomeScreen(),
         '/ai_tutor': (context) => const AITutorScreen(),
-        '/lesson': (context) => const LessonOverviewScreen(),
+        '/lesson': (context) => LessonOverviewScreen(),
         '/test': (context) => const TestScreen(),
         '/logout': (context) => Logout(),
         '/profile': (context) => ProfileScreen(),
+        '/report': (context) => ReportScreen(),
+        '/pretest': (context) => PretestScreen(),
+        '/login': (context) => Login(),
+        '/signin': (context) => SignIn(),
+        '/history': (context) => ChatHistoryScreen(),
       },
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const HomeScreen(),
+      // home: const SignIn(),
+      home: const Splashscreen(),
     );
   }
 }

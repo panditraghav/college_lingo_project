@@ -1,0 +1,33 @@
+void _submit() async {
+  if (_formKey.currentState!.validate()) {
+    final url = Uri.parse("https://your-api-endpoint.com/register");
+
+    var request = http.MultipartRequest('POST', url);
+
+    request.fields['name'] = _nameController.text;
+    request.fields['email'] = _emailController.text;
+    request.fields['phone'] = _phoneController.text;
+    request.fields['age'] = _ageController.text;
+    request.fields['gender'] = _gender;
+    request.fields['dob'] = _dobController.text;
+    request.fields['password'] = _passwordController.text;
+
+    if (_profileImage != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'profile_photo',
+          _profileImage!.path,
+        ),
+      );
+    }
+
+    final response = await request.send();
+
+    if (response.statusCode == 200) {
+      print("Success");
+      // You can show a success message or navigate to another screen
+    } else {
+      print("Failed with status: ${response.statusCode}");
+    }
+  }
+}

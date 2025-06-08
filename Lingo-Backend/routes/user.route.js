@@ -1,5 +1,5 @@
 import express from "express";
-import { register } from "../controllers/user.controller.js";
+import { getUserDetails, register, userProgress } from "../controllers/user.controller.js";
 import { login } from "../controllers/user.controller.js";
 import { updateProfile } from "../controllers/user.controller.js";
 import { logout } from "../controllers/user.controller.js";
@@ -10,10 +10,10 @@ const router = express.Router();
 
 router.route("/register").post(singleUpload, register);
 router.route("/login").post(login);
-router.route("/logout").post(logout);
-router
-  .route("/profile/update")
-  .post(isAuthenticated, singleUpload, updateProfile);
+router.route("/logout").post(isAuthenticated,logout);
+router.route("/profile/update").post(isAuthenticated, singleUpload, updateProfile);
+router.route("/progress").get(isAuthenticated, userProgress);
+router.route("/get").get(isAuthenticated, getUserDetails);
 
 export default router;
 
