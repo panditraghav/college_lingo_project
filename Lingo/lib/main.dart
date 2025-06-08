@@ -11,6 +11,7 @@ import 'package:lingo/Test/Test_Screen.dart';
 import 'package:lingo/Home/homescreen.dart';
 import 'package:lingo/User/profile.dart';
 import 'package:lingo/Home/splashScreen.dart';
+import 'package:lingo/chat_history_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
         '/pretest': (context) => PretestScreen(),
         '/login': (context) => Login(),
         '/signin': (context) => SignIn(),
+        '/history': (context) => ChatHistoryScreen(),
       },
       title: 'Flutter Demo',
       theme: ThemeData(
