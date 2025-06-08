@@ -1,10 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:lingo/Authentication/Logout_Screen.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+//import 'dart:convert';
+//import 'package:http/http.dart' as http;
 import 'package:lingo/services/api_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+//import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -24,6 +27,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String? _gender;
   DateTime? _selectedDate;
+  File? _selectedImage;
+
+  Future<void> _pickImage() async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      setState(() {
+        _selectedImage = File(picked.path);
+      });
+    }
+  }
 
   void _pickDate() async {
     DateTime? picked = await showDatePicker(
@@ -110,13 +123,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
           'gender': _gender,
           'dateOfBirth': _selectedDate?.toIso8601String(),
         },
+        file: _selectedImage,
       );
 
       if (response.data['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile updated successfully')),
         );
-        setState(() => _isEditing = false);
+        await _fetchUserProfile(); // Re-fetch updated profile data
+        setState(() {
+          _isEditing = false;
+          _selectedImage = null; // Clear local image selection
+        });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(response.data['message'] ?? 'Update failed')),
@@ -187,52 +205,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       backgroundColor: Colors.black,
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            Center(
-              child: Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundImage:
-                        _profileImageUrl != null && _profileImageUrl!.isNotEmpty
-                            ? NetworkImage(_profileImageUrl!)
-                            : const AssetImage('assets/images/lingoo2.png')
-                                as ImageProvider,
-                  ),
-
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.cyanAccent,
-                        shape: BoxShape.circle,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                Center(
+                  child: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundImage:
+                            _selectedImage != null
+                                ? FileImage(_selectedImage!)
+                                : (_profileImageUrl != null &&
+                                        _profileImageUrl!.isNotEmpty
+                                    ? NetworkImage(_profileImageUrl!)
+                                    : const AssetImage(
+                                          'assets/images/lingoo2.png',
+                                        )
+                                        as ImageProvider),
                       ),
-                    ),
+                      if (_isEditing)
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: _pickImage,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                color: Colors.cyanAccent,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                size: 20,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                ],
+                ),
+                const SizedBox(height: 30),
+                _buildTextField(label: 'Name', controller: _nameController),
+                const SizedBox(height: 16),
+                _buildDateField(),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  label: 'Phone Number',
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(label: 'Email', controller: _emailController),
+                const SizedBox(height: 16),
+                _buildGenderDropdown(),
+              ],
+            ),
+          ),
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.6),
+              child: const Center(
+                child: CircularProgressIndicator(color: Colors.cyanAccent),
               ),
             ),
-            const SizedBox(height: 30),
-            _buildTextField(label: 'Name', controller: _nameController),
-            const SizedBox(height: 16),
-            _buildDateField(),
-            const SizedBox(height: 16),
-            _buildTextField(
-              label: 'Phone Number',
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(label: 'Email', controller: _emailController),
-            const SizedBox(height: 16),
-            _buildGenderDropdown(),
-          ],
-        ),
+        ],
       ),
     );
   }

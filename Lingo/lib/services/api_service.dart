@@ -7,6 +7,8 @@ import 'package:lingo/models/ReportModel.dart';
 import 'package:lingo/models/lessons.dart';
 import 'package:lingo/models/test.dart';
 import 'package:logger/logger.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   final _dio = Dio();
@@ -67,8 +69,13 @@ class ApiService {
         "dateOfBirth": dateOfBirth,
         "gender": gender,
         "phoneNumber": phoneNumber,
-        "file": MultipartFile.fromFile(file.path),
+        "file": await MultipartFile.fromFile(
+          file.path,
+          filename: file.path.split('/').last,
+          contentType: MediaType('image', 'jpeg'),
+        ),
       });
+
       final response = await _dio.post('/user/register', data: data);
       return response;
     } on DioException catch (e) {
@@ -155,9 +162,34 @@ class ApiService {
     }
   }
 
-  Future<Response> updateProfile({required Map<String, dynamic> data}) async {
+  Future<Response> updateProfile({
+    required Map<String, dynamic> data,
+    File? file,
+  }) async {
     try {
-      final response = await _dio.post('/user/profile/update', data: data);
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      // Build form data
+      FormData formData = FormData.fromMap({
+        ...data,
+        if (file != null)
+          "file": await MultipartFile.fromFile(
+            file.path,
+            filename: "profile.jpg",
+          ),
+      });
+
+      final response = await _dio.post(
+        '/user/profile/update',
+        data: formData,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'multipart/form-data',
+          },
+        ),
+      );
       return response;
     } on DioException catch (e) {
       logger.e('Unable to update: $e');

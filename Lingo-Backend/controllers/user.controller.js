@@ -17,6 +17,7 @@ export const register = async (req, res) => {
             });
         }
         const file = req.file;
+        console.log(file);
         if (file) {
             try {
                 const fileUri = getDataUri(file);
