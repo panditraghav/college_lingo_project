@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:http/http.dart' as http;
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -31,6 +32,7 @@ class _AITutorScreenState extends State<AITutorScreen>
   bool _isListening = false;
   String? _chatId;
   final _apiBase = "$BACKEND_HOST:8000/api/ai";
+  bool _sendMessageLoading = false;
 
   late AnimationController _bgController;
   late Animation<Color?> _bgAnimation;
@@ -111,6 +113,9 @@ class _AITutorScreenState extends State<AITutorScreen>
     });
 
     try {
+      setState(() {
+        _sendMessageLoading = true;
+      });
       final resp = await http.post(
         Uri.parse("$_apiBase/chat/kokoro/$_chatId"),
         headers: {'Content-Type': 'application/json'},
@@ -124,6 +129,7 @@ class _AITutorScreenState extends State<AITutorScreen>
 
         setState(() {
           _messages.add({'text': reply, 'isBot': true, 'audioUrl': audioUrl});
+          _sendMessageLoading = false;
         });
 
         await _audioPlayer.setUrl(audioUrl);
@@ -132,6 +138,9 @@ class _AITutorScreenState extends State<AITutorScreen>
         throw Exception('API ${resp.statusCode}');
       }
     } catch (e) {
+      setState(() {
+        _sendMessageLoading = false;
+      });
       setState(() => _messages.add({'text': '🤖 Error: $e', 'isBot': true}));
     }
   }
@@ -275,6 +284,17 @@ class _AITutorScreenState extends State<AITutorScreen>
                     itemBuilder: (ctx, i) => _buildMessage(_messages[i]),
                   ),
                 ),
+                _sendMessageLoading
+                    ? Row(
+                      children: [
+                        SizedBox(width: 16),
+                        LoadingAnimationWidget.waveDots(
+                          color: Colors.white,
+                          size: 35,
+                        ),
+                      ],
+                    )
+                    : SizedBox(),
                 Container(
                   color: Colors.black87,
                   padding: const EdgeInsets.symmetric(
