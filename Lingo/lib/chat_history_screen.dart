@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
@@ -9,9 +10,11 @@ class ChatHistoryScreen extends StatefulWidget {
   _ChatHistoryScreenState createState() => _ChatHistoryScreenState();
 }
 
+final BACKEND_HOST = dotenv.env['BACKEND_HOST'] ?? "";
+
 class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
   final FlutterSecureStorage _storage = FlutterSecureStorage();
-  final String _baseUrl = "http://192.168.29.248:3000/api/v1/chat/from-user";
+  final String _baseUrl = "$BACKEND_HOST:3000/api/v1/chat/from-user";
   List<Map<String, dynamic>> _allMessages = [];
   bool _isLoading = true;
   final ScrollController _scrollController = ScrollController();
@@ -41,7 +44,8 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
       final response = await http.get(Uri.parse("$_baseUrl/$_userId"));
       if (response.statusCode != 200) throw Exception("Failed to load history");
 
-      final List<dynamic> data = jsonDecode(response.body);
+      List<dynamic> data = jsonDecode(response.body);
+      data = data.reversed.toList();
 
       List<Map<String, dynamic>> messages = [];
       for (var conversation in data) {
@@ -55,13 +59,18 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
       }
 
       setState(() {
-        _allMessages = messages.reversed.toList(); // newest first
+        _allMessages = messages; // newest first
         _isLoading = false;
       });
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
-          _scrollController.jumpTo(_scrollController.position.minScrollExtent);
+          // _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.ease,
+          );
         }
       });
     } catch (e) {
@@ -120,9 +129,8 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
   }
 
   Widget _buildAudioPlayer(String path) {
-    final player = AudioPlayer();
-    String filename = path.split('/').last;
-    final fullUrl = "http://192.168.29.248:3000$filename";
+    final player = AudioPlayer(androidOffloadSchedulingEnabled: true);
+    final fullUrl = "$BACKEND_HOST:8000$path";
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -131,6 +139,10 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
           icon: Icon(Icons.play_arrow, color: Colors.cyanAccent),
           onPressed: () async {
             try {
+              if (player.playing) {
+                player.pause();
+                return;
+              }
               await player.setUrl(fullUrl);
               await player.play();
             } catch (e) {

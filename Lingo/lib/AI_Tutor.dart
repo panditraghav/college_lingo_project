@@ -9,6 +9,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:just_audio/just_audio.dart';
 import 'chat_history_screen.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AITutorScreen extends StatefulWidget {
   const AITutorScreen({Key? key}) : super(key: key);
@@ -16,6 +17,8 @@ class AITutorScreen extends StatefulWidget {
   @override
   State<AITutorScreen> createState() => _AITutorScreenState();
 }
+
+final BACKEND_HOST = dotenv.env['BACKEND_HOST'] ?? "";
 
 class _AITutorScreenState extends State<AITutorScreen>
     with SingleTickerProviderStateMixin {
@@ -27,7 +30,7 @@ class _AITutorScreenState extends State<AITutorScreen>
   final _storage = const FlutterSecureStorage();
   bool _isListening = false;
   String? _chatId;
-  final _apiBase = "http://192.168.29.248:8000/api/ai";
+  final _apiBase = "$BACKEND_HOST:8000/api/ai";
 
   late AnimationController _bgController;
   late Animation<Color?> _bgAnimation;
@@ -117,8 +120,7 @@ class _AITutorScreenState extends State<AITutorScreen>
       if (resp.statusCode == 200) {
         final data = jsonDecode(resp.body);
         final reply = data['text'] as String;
-        final audioUrl =
-            "http://192.168.29.248:8000${data['final_audio_file']}";
+        final audioUrl = "$BACKEND_HOST:8000${data['final_audio_file']}";
 
         setState(() {
           _messages.add({'text': reply, 'isBot': true, 'audioUrl': audioUrl});
