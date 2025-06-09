@@ -17,13 +17,23 @@ class _HomeScreenState extends State<HomeScreen> {
   int completed = 0;
   int totalLessons = 0;
   bool isLoadingProgress = true;
+  bool _isFirstLoad = true;
 
   final _apiServices = ApiService();
+
   @override
   void initState() {
     super.initState();
     requestAllPermissions(); // Request permissions on screen load
-    fetchProgress();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isFirstLoad) {
+      fetchProgress();
+      _isFirstLoad = false;
+    }
   }
 
   Future<void> fetchProgress() async {
@@ -66,9 +76,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // Exit the app
         SystemNavigator.pop();
-        return false; // Prevent default pop
+        return false;
       },
       child: Scaffold(
         drawer: const AppDrawer(),
@@ -127,29 +136,37 @@ class _HomeScreenState extends State<HomeScreen> {
                             icon: Icons.smart_toy,
                             label: "AI Tutor",
                             color: Colors.yellow[700]!,
-                            onTap:
-                                () => Navigator.pushNamed(context, '/ai_tutor'),
+                            onTap: () async {
+                              await Navigator.pushNamed(context, '/ai_tutor');
+                              fetchProgress();
+                            },
                           ),
                           _buildActionButton(
                             icon: Icons.book,
                             label: "Lessons",
                             color: Colors.lightBlue,
-                            onTap:
-                                () => Navigator.pushNamed(context, '/lesson'),
+                            onTap: () async {
+                              await Navigator.pushNamed(context, '/lesson');
+                              fetchProgress();
+                            },
                           ),
                           _buildActionButton(
                             icon: Icons.quiz,
                             label: "Test",
                             color: Colors.redAccent,
-                            onTap:
-                                () => Navigator.pushNamed(context, '/pretest'),
+                            onTap: () async {
+                              await Navigator.pushNamed(context, '/pretest');
+                              fetchProgress();
+                            },
                           ),
                           _buildActionButton(
                             icon: Icons.person_4_outlined,
                             label: "Profile",
                             color: Colors.green,
-                            onTap:
-                                () => Navigator.pushNamed(context, '/profile'),
+                            onTap: () async {
+                              await Navigator.pushNamed(context, '/profile');
+                              fetchProgress();
+                            },
                           ),
                         ],
                       ),
@@ -157,8 +174,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       isLoadingProgress
                           ? const Center(child: CircularProgressIndicator())
                           : GestureDetector(
-                            onTap:
-                                () => Navigator.pushNamed(context, '/progress'),
+                            onTap: () async {
+                              await Navigator.pushNamed(context, '/progress');
+                              fetchProgress();
+                            },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 vertical: 20,
@@ -205,7 +224,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           ),
-
                       const SizedBox(height: 30),
                     ],
                   ),
