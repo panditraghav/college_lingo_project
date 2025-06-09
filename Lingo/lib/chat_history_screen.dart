@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
+import 'package:logger/logger.dart';
 
 class ChatHistoryScreen extends StatefulWidget {
   @override
@@ -11,10 +12,12 @@ class ChatHistoryScreen extends StatefulWidget {
 }
 
 final BACKEND_HOST = dotenv.env['BACKEND_HOST'] ?? "";
+final NODE_BACKEND_BASE = dotenv.env['NODE_BACKEND_BASE'] ?? "";
 
 class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
+  final logger = Logger();
   final FlutterSecureStorage _storage = FlutterSecureStorage();
-  final String _baseUrl = "$BACKEND_HOST:3000/api/v1/chat/from-user";
+  final String _baseUrl = "$NODE_BACKEND_BASE/chat/from-user";
   List<Map<String, dynamic>> _allMessages = [];
   bool _isLoading = true;
   final ScrollController _scrollController = ScrollController();
@@ -22,6 +25,7 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
 
   @override
   void initState() {
+    logger.i(_baseUrl);
     super.initState();
     _loadChatHistory();
   }
