@@ -18,6 +18,7 @@ class _SignInState extends State<SignIn> {
   final _apiService = ApiService();
   final logger = Logger();
   final _storage = FlutterSecureStorage();
+  bool _isLoadingSubmit = false;
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
@@ -55,6 +56,9 @@ class _SignInState extends State<SignIn> {
     if (_formKey.currentState!.validate()) {
       // Pass this data to your backend
       try {
+        setState(() {
+          _isLoadingSubmit = true;
+        });
         final response = await _apiService.signup(
           email: _emailController.text,
           password: _passwordController.text,
@@ -65,26 +69,24 @@ class _SignInState extends State<SignIn> {
           phoneNumber: _phoneController.text,
           file: _profileImage!,
         );
-        logger.i(response.data);
 
         final token = response.data['token'];
-        logger.i("Token: $token");
 
         if (token != null) {
           await _storage.write(key: 'token', value: token);
         }
 
         _formKey.currentState!.save();
-        logger.i("Name: ${_nameController.text}");
-        logger.i("Email: ${_emailController.text}");
-        logger.i("Phone: ${_phoneController.text}");
-        logger.i("Age: ${_ageController.text}");
-        logger.i("Gender: $_gender");
-        logger.i("DOB: ${_dobController.text}");
-        logger.i("Password: ${_passwordController.text}");
+
+        setState(() {
+          _isLoadingSubmit = false;
+        });
 
         Navigator.pushNamed(context, '/home');
       } catch (e) {
+        setState(() {
+          _isLoadingSubmit = false;
+        });
         logger.e(e);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -163,14 +165,16 @@ class _SignInState extends State<SignIn> {
                 obscure: true,
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: neonColor,
-                  foregroundColor: Colors.black,
-                ),
-                onPressed: _submit,
-                child: const Text('Sign Up'),
-              ),
+              _isLoadingSubmit
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: neonColor,
+                      foregroundColor: Colors.black,
+                    ),
+                    onPressed: _submit,
+                    child: const Text('Sign Up'),
+                  ),
             ],
           ),
         ),
