@@ -10,9 +10,13 @@
 - Login / Signup (JWT authentication)
 
 ## Images
-![Home Screen](./images/HomeScreen.jpg) 
-![Lesson Screen](./images/LessonScreen.jpg) 
-![AI Chat Screen](./images/AIChatScreen.jpg) 
+| Home Screen | AI Chat Screen |
+| ------------- | -------------- |
+| ![Home Screen](./images/HomeScreen.jpg) | ![AI Chat Screen](./images/AIChatScreen.jpg) |
+
+| Lesson Screen | Test Screen |
+| ------------- | -------------- |
+| ![Lesson Screen](./images/LessonScreen.jpg) | ![Individual Test Screen](./images/IndividualTestScreen.jpg) |
 
 ## Contributors
 1. Poorab Patel - Backend (Node.js)
