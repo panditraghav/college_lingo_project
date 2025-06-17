@@ -1,5 +1,14 @@
 # Lingo - AI Based english learning app
 
+<div>
+  <img src="./images/HomeScreen.jpg" width="49%"/>
+  <img src="./images/AIChatScreen.jpg" width="49%"/>
+</div>
+<div>
+  <img src="./images/LessonScreen.jpg" width="49%"/>
+  <img src="./images/IndividualTestScreen.jpg" width="49%"/>
+</div>
+
 ## Features
 - AI Chatbot with voice which can seemlessly talk to the users and improve their english conversation skills (Kokoro & gemini).
 - Chat history.
@@ -8,15 +17,6 @@
 - Progress report.
 - Profile view and update.
 - Login / Signup (JWT authentication)
-
-## Images
-| Home Screen | AI Chat Screen |
-| ------------- | -------------- |
-| ![Home Screen](./images/HomeScreen.jpg) | ![AI Chat Screen](./images/AIChatScreen.jpg) |
-
-| Lesson Screen | Test Screen |
-| ------------- | -------------- |
-| ![Lesson Screen](./images/LessonScreen.jpg) | ![Individual Test Screen](./images/IndividualTestScreen.jpg) |
 
 ## Contributors
 1. Poorab Patel - Backend (Node.js)
